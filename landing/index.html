@@ -1,0 +1,556 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Навигатор</title>
+<style>
+:root{
+  color-scheme:light dark;
+  --paper:#EDEFEA; --surface:#F8F9F5; --surface-2:#E4E8DF; --sunk:#E2E7DC;
+  --line:#D2D8CA; --line-soft:#E0E5D9;
+  --ink:#151A15; --ink-2:#3E4A3E; --ink-3:#5E6B57;
+  --pine:#1D4A38; --pine-2:#2F6B52; --pine-soft:#DCE8DF;
+  --ochre:#8A5F14; --ochre-soft:#F0E6D2;
+  --crit:#8C3226; --crit-soft:#F2DFDB;
+  --band:#12281F; --band-ink:#F2F7F2; --band-ink-2:#A9C4B4; --band-line:#2C4A3A;
+  --shadow:0 1px 2px rgba(21,26,21,.04), 0 14px 34px -22px rgba(21,26,21,.34);
+  --font-display:Georgia,Cambria,'PT Serif','Times New Roman',serif;
+  --font-body:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+  --font-mono:ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,monospace;
+  --gutter:clamp(20px,5vw,64px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#0D110E; --surface:#141A15; --surface-2:#1B231C; --sunk:#121912;
+    --line:#2A342B; --line-soft:#222B23;
+    --ink:#E5EAE2; --ink-2:#AABBA6; --ink-3:#82937E;
+    --pine:#6DBB96; --pine-2:#8CCFAE; --pine-soft:#163024;
+    --ochre:#D3A459; --ochre-soft:#33280F;
+    --crit:#DE8577; --crit-soft:#361B17;
+    --band:#080F0A; --band-ink:#F2F7F2; --band-ink-2:#A9C4B4; --band-line:#22382B;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 14px 34px -22px rgba(0,0,0,.8);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0D110E; --surface:#141A15; --surface-2:#1B231C; --sunk:#121912;
+  --line:#2A342B; --line-soft:#222B23;
+  --ink:#E5EAE2; --ink-2:#AABBA6; --ink-3:#82937E;
+  --pine:#6DBB96; --pine-2:#8CCFAE; --pine-soft:#163024;
+  --ochre:#D3A459; --ochre-soft:#33280F;
+  --crit:#DE8577; --crit-soft:#361B17;
+  --band:#080F0A; --band-ink:#F2F7F2; --band-ink-2:#A9C4B4; --band-line:#22382B;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 14px 34px -22px rgba(0,0,0,.8);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:var(--font-body); font-size:16.5px; line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3{font-family:var(--font-display); font-weight:400; text-wrap:balance; margin:0; letter-spacing:-.018em}
+h1{font-size:clamp(34px,6.4vw,68px); line-height:1.04}
+h2{font-size:clamp(26px,3.8vw,40px); line-height:1.14}
+h3{font-size:clamp(18px,2vw,21px); line-height:1.3; letter-spacing:-.008em}
+p{margin:0}
+a{color:var(--pine); text-underline-offset:3px; text-decoration-thickness:1px}
+:focus-visible{outline:2px solid var(--pine-2); outline-offset:3px; border-radius:3px}
+
+.eyebrow{
+  font-family:var(--font-mono); font-size:11px; letter-spacing:.16em;
+  text-transform:uppercase; color:var(--ink-3);
+}
+.lede{font-size:clamp(17px,2.1vw,21px); line-height:1.55; color:var(--ink-2)}
+
+/* ---------- layout ---------- */
+.wrap{max-width:1180px; margin:0 auto; padding-inline:var(--gutter)}
+.prose{max-width:64ch}
+section{padding-block:clamp(56px,8vw,116px)}
+.band{background:var(--surface); border-block:1px solid var(--line)}
+.dark-band{background:var(--band); color:var(--band-ink-2); border-block:1px solid var(--band-line)}
+.dark-band h2, .dark-band h3{color:var(--band-ink)}
+.dark-band .eyebrow{color:#7FA592}
+.dark-band a{color:var(--band-ink)}
+
+.stack{display:flex; flex-direction:column; gap:clamp(18px,2.4vw,30px)}
+.stack-s{display:flex; flex-direction:column; gap:12px}
+.row{display:flex; gap:14px; flex-wrap:wrap; align-items:center}
+.cols{display:grid; grid-template-columns:repeat(auto-fit,minmax(258px,1fr)); gap:clamp(16px,2vw,26px)}
+.cols-2{display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:clamp(20px,3vw,44px)}
+
+/* ---------- header ---------- */
+.top{
+  position:sticky; top:0; z-index:30; background:color-mix(in srgb, var(--paper) 88%, transparent);
+  backdrop-filter:blur(10px); border-bottom:1px solid var(--line-soft);
+}
+.top .wrap{display:flex; align-items:center; gap:16px; padding-block:13px}
+.mark{display:flex; align-items:center; gap:10px; margin-right:auto; text-decoration:none; color:inherit}
+.mark svg{flex:0 0 auto}
+.mark b{font-family:var(--font-display); font-size:19px; font-weight:400; letter-spacing:-.02em}
+.topnav{display:flex; gap:22px}
+.topnav a{color:var(--ink-2); text-decoration:none; font-size:14px}
+.topnav a:hover{color:var(--pine)}
+@media (max-width:760px){ .topnav{display:none} }
+
+/* ---------- buttons ---------- */
+.cta{
+  display:inline-flex; align-items:center; gap:9px; text-decoration:none;
+  background:var(--pine); color:var(--surface); padding:14px 26px; border-radius:2px;
+  font-size:16px; font-weight:600; letter-spacing:.005em;
+  transition:transform .16s ease, box-shadow .16s ease;
+  box-shadow:0 2px 0 var(--pine-2);
+}
+.cta:hover{transform:translateY(-2px); box-shadow:0 4px 0 var(--pine-2)}
+.cta:active{transform:translateY(0); box-shadow:0 1px 0 var(--pine-2)}
+.cta.on-dark{background:var(--band-ink); color:var(--band); box-shadow:0 2px 0 #7FA592}
+.cta.on-dark:hover{box-shadow:0 4px 0 #7FA592}
+.cta-2{
+  display:inline-flex; align-items:center; gap:8px; text-decoration:none; color:var(--ink-2);
+  padding:14px 4px; font-size:15px; border-bottom:1px solid var(--line);
+  transition:color .15s, border-color .15s;
+}
+.cta-2:hover{color:var(--pine); border-color:var(--pine)}
+
+/* ---------- hero ---------- */
+.hero{padding-top:clamp(40px,6vw,86px); padding-bottom:clamp(30px,4vw,50px)}
+.hero h1{margin-top:20px}
+.hero .lede{margin-top:24px; max-width:56ch}
+.hero .row{margin-top:34px}
+
+.forkwrap{padding-bottom:clamp(50px,7vw,90px)}
+.fork{width:100%; height:auto; display:block; overflow:visible}
+.fork .rd{fill:none; stroke:var(--line); stroke-width:1.6}
+.fork .rd.hot{stroke:var(--pine); stroke-width:2.2}
+.fork .node{fill:var(--paper); stroke:var(--pine); stroke-width:2}
+.fork .start{fill:var(--pine); stroke:none}
+.chips{display:flex; flex-wrap:wrap; gap:8px; margin-top:22px}
+.chip{
+  font-size:13.5px; padding:6px 14px; border:1px solid var(--line); border-radius:100px;
+  background:var(--surface); color:var(--ink-2);
+}
+.chip b{font-weight:600; color:var(--ink)}
+
+@media (prefers-reduced-motion:no-preference){
+  .fork path{stroke-dasharray:var(--len,900); stroke-dashoffset:var(--len,900); animation:draw 1.5s cubic-bezier(.22,.61,.36,1) forwards}
+  .fork .b1{animation-delay:.55s} .fork .b2{animation-delay:.68s} .fork .b3{animation-delay:.81s}
+  .fork .b4{animation-delay:.94s} .fork .b5{animation-delay:1.07s}
+  .fork circle{opacity:0; animation:pop .5s ease forwards}
+  .fork .n0{animation-delay:.3s} .fork .n1{animation-delay:1.5s} .fork .n2{animation-delay:1.62s}
+  .fork .n3{animation-delay:1.74s} .fork .n4{animation-delay:1.86s} .fork .n5{animation-delay:1.98s}
+  .js-reveal .reveal{opacity:0; transform:translateY(18px); transition:opacity .7s ease, transform .7s cubic-bezier(.22,.61,.36,1)}
+  .js-reveal .reveal.in{opacity:1; transform:none}
+}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes pop{to{opacity:1}}
+@media (prefers-reduced-motion:reduce){*{animation:none !important; transition:none !important}}
+
+/* ---------- journey spine ---------- */
+.steps{list-style:none; margin:0; padding:0; position:relative}
+.steps::before{
+  content:''; position:absolute; left:15px; top:14px; bottom:14px; width:1px;
+  background:linear-gradient(var(--line-soft), var(--pine) 22%, var(--pine) 78%, var(--line-soft));
+}
+.steps li{position:relative; padding-left:52px; padding-block:15px}
+.steps li + li{border-top:1px solid var(--line-soft)}
+.steps .dot{
+  position:absolute; left:8px; top:19px; width:15px; height:15px; border-radius:100px;
+  background:var(--paper); border:2px solid var(--pine);
+}
+.steps li[data-fork] .dot{background:var(--pine); box-shadow:0 0 0 4px var(--pine-soft)}
+.steps h3{display:inline}
+.steps .n{font-family:var(--font-mono); font-size:11.5px; color:var(--ink-3); margin-right:10px}
+.steps p{color:var(--ink-2); font-size:15px; margin-top:5px}
+.forkmark{
+  margin-left:52px; margin-block:6px; padding:12px 16px; border-left:2px solid var(--ochre);
+  background:var(--ochre-soft); color:var(--ochre); font-size:14px; border-radius:0 3px 3px 0;
+}
+
+/* ---------- cards ---------- */
+.card{
+  background:var(--surface); border:1px solid var(--line); border-radius:3px;
+  padding:24px 26px; display:flex; flex-direction:column; gap:10px;
+}
+.card.plain{background:transparent; border:0; border-top:2px solid var(--pine); border-radius:0; padding:20px 0 0}
+.card p{color:var(--ink-2); font-size:15px}
+.why{
+  font-size:13.5px; color:var(--ink-3); border-top:1px solid var(--line-soft);
+  padding-top:10px; margin-top:auto;
+}
+.why b{color:var(--ink-2); font-weight:600}
+
+.roles{display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:3px; overflow:hidden}
+.role{background:var(--surface); padding:22px 20px; display:flex; flex-direction:column; gap:8px}
+.role .eyebrow{color:var(--pine)}
+.role p{font-size:14.5px; color:var(--ink-2)}
+
+.callout{
+  border:1px solid var(--pine); border-left-width:3px; border-radius:0 3px 3px 0;
+  background:var(--pine-soft); padding:22px 26px;
+}
+.callout h3{color:var(--ink)}
+.callout p{color:var(--ink-2); margin-top:8px}
+
+.qlist{list-style:none; margin:0; padding:0; counter-reset:q}
+.qlist li{
+  counter-increment:q; padding:18px 0 18px 46px; position:relative;
+  border-bottom:1px solid var(--line-soft);
+}
+.qlist li::before{
+  content:counter(q,decimal-leading-zero); position:absolute; left:0; top:20px;
+  font-family:var(--font-mono); font-size:12px; color:var(--ochre); letter-spacing:.06em;
+}
+.qlist b{font-weight:600}
+.qlist span{display:block; color:var(--ink-2); font-size:15px; margin-top:4px}
+
+.limits{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:13px}
+.limits li{padding-left:24px; position:relative; color:var(--band-ink-2); font-size:15.5px}
+.limits li::before{
+  content:''; position:absolute; left:0; top:9px; width:9px; height:1.5px; background:#7FA592;
+}
+
+.owner{
+  border:1px dashed var(--ochre); background:var(--ochre-soft); border-radius:3px;
+  padding:clamp(22px,3vw,34px);
+}
+.owner h2{font-size:clamp(21px,2.6vw,27px)}
+.owner ul{margin:16px 0 0; padding-left:20px; color:var(--ochre)}
+.owner li{margin-bottom:9px}
+.owner li b{font-weight:700}
+
+footer{border-top:1px solid var(--line); padding-block:34px; color:var(--ink-3); font-size:14px}
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <a class="mark" href="#top">
+      <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true">
+        <path d="M4 19 Q4 11 11 11 Q18 11 18 3" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+        <circle cx="4" cy="19" r="2.4" fill="currentColor"/>
+      </svg>
+      <b>Навигатор</b>
+    </a>
+    <nav class="topnav">
+      <a href="#put">Как это работает</a>
+      <a href="#inache">Что иначе</a>
+      <a href="#voprosy">Открытые вопросы</a>
+      <a href="#interface">Интерфейс</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+
+<section class="hero">
+  <div class="wrap">
+    <div class="prose">
+      <div class="eyebrow">Образовательная платформа · закрытый доступ</div>
+      <h1>У каждого ребёнка есть то, что у него получается. Задача&nbsp;— успеть это найти.</h1>
+      <p class="lede">Закрытая образовательная платформа для детей из детских домов. Помогает понять,
+        к чему ребёнок расположен, даёт под это настоящий курс и доводит до первого навыка,
+        который можно предъявить.</p>
+      <div class="row">
+        <a class="cta" href="../" target="_blank" rel="noopener">
+          Посмотреть интерфейс
+          <svg width="15" height="15" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M3 8h10M9 4l4 4-4 4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+        <a class="cta-2" href="#put">Сначала посмотреть, как устроено</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="forkwrap">
+  <div class="wrap">
+    <svg class="fork" viewBox="0 0 820 210" role="img" aria-label="Схема: один вход в платформу, дальше путь расходится на пять направлений обучения">
+      <path class="rd hot b0" style="--len:300" d="M20 105 H300"/>
+      <path class="rd b1" style="--len:620" d="M300 105 C 470 105, 500 20, 790 20"/>
+      <path class="rd b2" style="--len:600" d="M300 105 C 470 105, 500 62, 790 62"/>
+      <path class="rd hot b3" style="--len:560" d="M300 105 H790"/>
+      <path class="rd b4" style="--len:600" d="M300 105 C 470 105, 500 148, 790 148"/>
+      <path class="rd b5" style="--len:620" d="M300 105 C 470 105, 500 190, 790 190"/>
+      <circle class="start n0" cx="20" cy="105" r="7"/>
+      <circle class="node n1" cx="790" cy="20" r="5.5"/>
+      <circle class="node n2" cx="790" cy="62" r="5.5"/>
+      <circle class="node n3" cx="790" cy="105" r="5.5"/>
+      <circle class="node n4" cx="790" cy="148" r="5.5"/>
+      <circle class="node n5" cx="790" cy="190" r="5.5"/>
+    </svg>
+    <div class="chips">
+      <span class="chip"><b>Работа с людьми</b> — помогать, объяснять, договариваться</span>
+      <span class="chip"><b>Техника и ремонт</b> — разбираться, чинить, собирать руками</span>
+      <span class="chip"><b>Данные и код</b> — порядок, цифры, логика</span>
+      <span class="chip"><b>Дизайн и медиа</b> — придумывать, снимать, оформлять</span>
+      <span class="chip"><b>Природа и агро</b> — растения, животные, хозяйство</span>
+    </div>
+  </div>
+</div>
+
+<section class="band">
+  <div class="wrap stack reveal">
+    <div class="prose stack">
+      <div class="eyebrow">Зачем</div>
+      <h2>Выбор без выбора</h2>
+      <p class="lede">В районном центре нет профориентолога. В учреждении нет мастерской, а в соседнем
+        городе есть, но туда не возят. И ребёнок в четырнадцать выбирает колледж по принципу «куда
+        берут» и «куда пошёл сосед по комнате».</p>
+      <p>Не потому что ленивый. Потому что выбирать не из чего и не с кем: рядом нет взрослого,
+        чья работа — разглядеть, что у этого конкретного человека получается лучше остального.
+        А в восемнадцать он выходит за ворота, и с этого дня решает всё сам.</p>
+      <p>Мы не можем привезти в каждое учреждение мастера и психолога. Но можем привезти туда
+        страницу, которая делает три вещи по порядку: помогает понять склонности, даёт под них
+        настоящий курс и доводит до первого документа, который можно показать в колледже или
+        приложить к резюме.</p>
+    </div>
+  </div>
+</section>
+
+<section id="put">
+  <div class="wrap stack">
+    <div class="prose stack reveal">
+      <div class="eyebrow">Как это работает</div>
+      <h2>Десять шагов от «не знаю» до подтверждённого навыка</h2>
+      <p class="lede">Это не меню функций, а последовательность: каждый шаг имеет смысл только
+        после предыдущего. Развилка — одна, и она в середине.</p>
+    </div>
+
+    <ol class="steps reveal">
+      <li><span class="dot"></span>
+        <span class="n">01</span><h3>Вход по ключу</h3>
+        <p>Регистрации с улицы нет. Ключ выдаёт куратор вместе с оформленным согласием законного
+          представителя — без документа ключ не выпускается.</p></li>
+      <li><span class="dot"></span>
+        <span class="n">02</span><h3>Первый разговор</h3>
+        <p>Три вопроса и сразу первая догадка о том, что ребёнку ближе. Ценность выдаётся до
+          длинных опросников, а не после них.</p></li>
+      <li><span class="dot"></span>
+        <span class="n">03</span><h3>Короткая анкета</h3>
+        <p>Учёба, увлечения, а главное — с какого устройства он заходит и сколько времени реально
+          есть. От этого зависит формат, в котором мы отдадим ему курс.</p></li>
+      <li data-fork><span class="dot"></span>
+        <span class="n">04</span><h3>Вопросы о склонностях</h3>
+        <p>Не экзамен и не проверка «нормальный ли ты». Пятнадцать утверждений, из которых
+          складываются сильные стороны.</p></li>
+      <li data-fork><span class="dot"></span>
+        <span class="n">05</span><h3>Профиль и рекомендация</h3>
+        <p>Здесь дорога расходится: ребёнок видит два-три направления, с которых стоит начать
+          пробовать, и объяснение, что это подсказка, а не приговор.</p></li>
+    </ol>
+    <div class="forkmark reveal">Развилка. Дальше у каждого ребёнка свой маршрут — но шаги те же.</div>
+    <ol class="steps reveal" start="6">
+      <li><span class="dot"></span>
+        <span class="n">06</span><h3>Каталог курсов</h3>
+        <p>Сначала подходящее по профилю, остальное тоже открыто. Курсы партнёрские: колледжи,
+          онлайн-школы, мастера-волонтёры.</p></li>
+      <li><span class="dot"></span>
+        <span class="n">07</span><h3>Урок</h3>
+        <p>У каждого урока есть текстовая версия рядом с видео — потому что там, где платформа
+          нужнее всего, видео чаще всего не откроется.</p></li>
+      <li><span class="dot"></span>
+        <span class="n">08</span><h3>Задание и проверка</h3>
+        <p>Практику проверяет живой преподаватель и отвечает лично. Оценка записывается фактом:
+          кто, когда и за какую версию задания.</p></li>
+      <li><span class="dot"></span>
+        <span class="n">09</span><h3>Аттестация</h3>
+        <p>Не сдал — не страшно, пересдать можно сразу. Попытки не ограничены: цель научить,
+          а не отсеять.</p></li>
+      <li><span class="dot"></span>
+        <span class="n">10</span><h3>Сертификат</h3>
+        <p>Первый документ, подтверждающий навык. Он не раскрывает ни учреждение, ни статус
+          ребёнка — только то, что человек прошёл курс.</p></li>
+    </ol>
+  </div>
+</section>
+
+<section class="band" id="roli">
+  <div class="wrap stack">
+    <div class="prose stack reveal">
+      <div class="eyebrow">Кто внутри</div>
+      <h2>Пять ролей, и каждая видит строго своё</h2>
+      <p class="lede">Разграничение доступа здесь не настройка интерфейса, а условие того,
+        что диагностика вообще имеет смысл.</p>
+    </div>
+    <div class="roles reveal">
+      <div class="role"><div class="eyebrow">Ребёнок</div>
+        <p>Свой путь, свой профиль, свои курсы и сертификаты. Видит всё о себе.</p></div>
+      <div class="role"><div class="eyebrow">Куратор</div>
+        <p>Кто идёт в графике, кто пропал, кого позвать лично. Не видит ответов и профиля.</p></div>
+      <div class="role"><div class="eyebrow">Психолог</div>
+        <p>Профиль склонностей и сопровождение. Единственный взрослый, кто видит ответы.</p></div>
+      <div class="role"><div class="eyebrow">Преподаватель</div>
+        <p>Свои курсы, задания и оценки. Не видит ни профиля, ни статуса ребёнка.</p></div>
+      <div class="role"><div class="eyebrow">Администратор</div>
+        <p>Ключи доступа, основания, аналитика, журнал действий. Не видит ответов.</p></div>
+    </div>
+    <div class="callout reveal">
+      <h3>Инвариант, который не обсуждается</h3>
+      <p>Ответы ребёнка о себе видит только он сам и психолог проекта. Ни преподаватель, ни куратор,
+        ни сотрудник учреждения. Если подросток допускает, что воспитатель прочитает его ответы, он
+        будет отвечать правильно, а не честно — и вся методика обесценится. Поэтому эта строка
+        должна попасть в договор с подрядчиком дословно.</p>
+    </div>
+  </div>
+</section>
+
+<section id="inache">
+  <div class="wrap stack">
+    <div class="prose stack reveal">
+      <div class="eyebrow">Что иначе</div>
+      <h2>Восемь решений, взятых из реальности учреждений</h2>
+      <p class="lede">Каждое появилось не из желания сделать красиво, а из ответа на вопрос
+        «чем это сломается в первый же день пилота».</p>
+    </div>
+    <div class="cols reveal">
+      <div class="card"><h3>Куратор — обязательная роль</h3>
+        <p>Взрослый, который замечает «ты не заходил девятнадцать дней» и приходит спросить лично.</p>
+        <p class="why"><b>Почему:</b> без него доходимость подростков в учреждениях околонулевая. Онлайн сам по себе не удерживает.</p></div>
+      <div class="card"><h3>Польза до опросников</h3>
+        <p>Первая догадка о себе — через три вопроса и минуту, а не через две анкеты подряд.</p>
+        <p class="why"><b>Почему:</b> подросток закроет вкладку, если первые двадцать минут это только вопросы без отдачи.</p></div>
+      <div class="card"><h3>Текст рядом с каждым видео</h3>
+        <p>Урок открывается текстом по умолчанию, видео — по желанию.</p>
+        <p class="why"><b>Почему:</b> в целевых регионах канал узкий. Иначе усилия уйдут на видео, которое аудитория не посмотрит.</p></div>
+      <div class="card"><h3>Выход стирает всё за собой</h3>
+        <p>Кнопка видна на каждом экране, и после неё следующий пользователь начинает с нуля.</p>
+        <p class="why"><b>Почему:</b> вход чаще всего с общего компьютера. Чужой профиль на экране — самый вероятный инцидент первого дня.</p></div>
+      <div class="card"><h3>Ключ привязан к документу</h3>
+        <p>У каждого ключа — согласие законного представителя и указание, кто им является.</p>
+        <p class="why"><b>Почему:</b> представитель не всегда учреждение. У части детей права родителей сохранены, и подписывает родитель.</p></div>
+      <div class="card"><h3>Консультации не записываются</h3>
+        <p>Запись разговора психолога с ребёнком по умолчанию отключена.</p>
+        <p class="why"><b>Почему:</b> такую запись лучше не создавать вовсе, чем потом защищать.</p></div>
+      <div class="card"><h3>Защита от малых чисел</h3>
+        <p>Где детей меньше пяти, отчёт не показывает ни процентов, ни абсолютных значений.</p>
+        <p class="why"><b>Почему:</b> в учреждении на четверых строка «начал один» указывает на конкретного ребёнка.</p></div>
+      <div class="card"><h3>Регламент эскалации</h3>
+        <p>Если ребёнок сообщает о беде, сигнал не теряется, а факт передачи фиксируется.</p>
+        <p class="why"><b>Почему:</b> это процедура для живых людей, и её отсутствие опаснее любой технической ошибки.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="voprosy">
+  <div class="wrap stack">
+    <div class="prose stack reveal">
+      <div class="eyebrow">Открытые вопросы</div>
+      <h2>Чего мы пока не знаем</h2>
+      <p class="lede">Проект дошёл до стадии, на которой честнее показать нерешённое, чем изобразить
+        готовые ответы. Ниже — шесть вопросов, от которых зависит, каким получится продукт. Пока
+        на них нет ответов, любой названный срок будет угадыванием.</p>
+    </div>
+    <ol class="qlist prose reveal">
+      <li><b>Масштаб и срок.</b>
+        <span>Пилот на одно учреждение или платформа на регион — это разные проекты, а не разные объёмы одного.</span></li>
+      <li><b>Кто юридически оператор персональных данных.</b>
+        <span>Фонд или каждое учреждение. От этого зависит, кто подписывает согласия и на ком ответственность.</span></li>
+      <li><b>Чьи методики измеряют склонности.</b>
+        <span>Лицензированные, собранные психологом-методологом или уже существующие свои. Собрать вопросы из интернета нельзя.</span></li>
+      <li><b>Как ключ доступа физически доходит до ребёнка.</b>
+        <span>И что происходит при восстановлении: у многих детей нет ни личной почты, ни телефона.</span></li>
+      <li><b>Сколько детей и на каких устройствах.</b>
+        <span>От этого зависят и требования к контенту, и то, что придётся поддерживать со второго года.</span></li>
+      <li><b>Относятся ли результаты к специальным категориям данных.</b>
+        <span>Если да — другая форма согласия и другой уровень защиты. Возможно, проще спроектировать так, чтобы таких данных не возникало вовсе.</span></li>
+    </ol>
+    <div class="prose reveal">
+      <p>Отдельной строкой, вне списка: модель согласий должна пройти проверку профильным юристом
+        до того, как в систему попадут данные первого ребёнка — включая пилот на пятерых.</p>
+    </div>
+  </div>
+</section>
+
+<section class="dark-band" id="interface">
+  <div class="wrap">
+    <div class="cols-2">
+      <div class="stack reveal">
+        <div class="eyebrow">Интерфейс</div>
+        <h2>Его можно открыть прямо сейчас и пройти целиком</h2>
+        <p>Восемнадцать экранов, пять ролей. Путь ребёнка проходится кликами от ввода ключа до
+          сертификата. Переключатель ролей сверху показывает, что видит каждый взрослый — и, что
+          важнее, чего он не видит.</p>
+        <p>Отдельная кнопка «Проектные решения» включает подписи прямо на экранах: где продукт
+          намеренно расходится с первоначальным техническим заданием и почему. Это то, что стоит
+          показывать подрядчику — тогда предложения можно сравнивать между собой.</p>
+        <div class="row" style="margin-top:10px">
+          <a class="cta on-dark" href="../" target="_blank" rel="noopener">
+            Посмотреть интерфейс
+            <svg width="15" height="15" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M3 8h10M9 4l4 4-4 4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+      <div class="stack reveal">
+        <div class="eyebrow">Что в этой версии работает, а что нет</div>
+        <ul class="limits">
+          <li>Интерфейс работает целиком в браузере, без сервера: ничего не отправляется и не сохраняется.</li>
+          <li>Все имена, учреждения и цифры вымышлены и намеренно обезличены, чтобы скриншот нельзя
+            было принять за реальные данные детей.</li>
+          <li>Вопросы о склонностях — демонстрационные. Валидизированную методику ещё предстоит взять
+            у профильного специалиста, и это отдельная работа.</li>
+          <li>Развёрнут один полный урок, остальные курсы показаны витриной и помечены.</li>
+          <li>Видеосвязь, плеер и проверка сертификата по коду — макеты, подписанные как макеты.</li>
+          <li>Интерфейс и документы прошли восемь независимых прогонов внутренней проверки — по
+            коду, по защите данных несовершеннолетних и с позиций всех участников цепочки. Найдено
+            и исправлено четыре блокирующих замечания, включая такое: кнопка «Выйти» не стирала
+            профиль, и следующий ребёнок на общем компьютере видел чужие ответы. Внешней экспертизы
+            живыми специалистами пока не было — она нужна, и в первую очередь юридическая.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="owner reveal">
+      <div class="eyebrow" style="color:var(--ochre)">Служебный блок — удалите перед показом</div>
+      <h2 style="margin-top:10px; color:var(--ink)">Что подставить своими данными</h2>
+      <p style="margin-top:10px; color:var(--ink-2)">На этой странице сознательно нет ни одной
+        статистики. Цифры о выпускниках детских домов легко найти в пересказах, но приводить их
+        без проверенного источника нельзя — особенно в документе, который показывают людям,
+        принимающим решения. Подставьте свои, со ссылкой на источник:</p>
+      <ul>
+        <li><b>Масштаб проблемы</b> — данные по вашему региону со ссылкой на официальный источник.</li>
+        <li><b>Кто вы</b> — название организации, срок работы, с какими учреждениями уже есть договорённости.</li>
+        <li><b>Команда</b> — психолог-методолог, преподаватели, кураторы: кто уже есть, кого ищете.</li>
+        <li><b>Партнёры по контенту</b> — колледжи и школы, которые подтвердили готовность дать курсы.</li>
+        <li><b>Чего просите</b> — сумма, срок, на что конкретно и что будет считаться результатом.</li>
+        <li><b>Контакты</b> — имя, должность, почта, телефон.</li>
+      </ul>
+      <p style="margin-top:16px; color:var(--ink-2)"><b>Про ссылку на интерфейс:</b> он открыт
+        только вам, пока вы не откроете доступ через меню «Поделиться» на самой той странице.
+        Сделайте это до встречи, иначе гость упрётся в запрос доступа прямо при вас.</p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap row" style="justify-content:space-between">
+    <span>«Навигатор» — образовательная платформа для детей из детских домов.</span>
+    <span>2026</span>
+  </div>
+</footer>
+
+<script>
+document.documentElement.lang = "ru";
+// Секции скрываются ТОЛЬКО после того, как наблюдатель заведомо доступен: если что-то пойдёт
+// не так, страница останется полностью читаемой, а не пустой.
+(function(){
+  var els = document.querySelectorAll(".reveal");
+  if(!("IntersectionObserver" in window) ||
+     window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+  document.documentElement.classList.add("js-reveal");
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if(en.isIntersecting){ en.target.classList.add("in"); io.unobserve(en.target); }
+    });
+  }, {rootMargin:"0px 0px -10% 0px", threshold:0});
+  els.forEach(function(e){ io.observe(e); });
+
+  // Страховка: что бы ни случилось, через 3 секунды всё видно.
+  setTimeout(function(){ els.forEach(function(e){ e.classList.add("in"); }); }, 3000);
+})();
+</script>

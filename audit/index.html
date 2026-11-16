@@ -1,0 +1,2068 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Навигатор — разбор</title>
+<style>
+:root{
+  color-scheme:light dark;
+  --bg:#F3F5F7; --surface:#FFFFFF; --surface-2:#EBEEF1; --sunk:#E5E9ED;
+  --line:#DBE0E5; --line-soft:#E8ECEF;
+  --ink:#12171C; --ink-2:#3B444D; --ink-3:#59646F;
+  --accent:#1D4A38; --accent-2:#2F6B52; --accent-soft:#DEE9E2;
+  --crit:#A02A1B; --crit-soft:#FAE4E0;
+  --warn:#87590F; --warn-soft:#F6EAD5;
+  --ok:#1B6544; --ok-soft:#DDEFE4;
+  --low:#54606B; --low-soft:#E6EAEE;
+  --shadow:0 1px 2px rgba(18,23,28,.04), 0 12px 28px -20px rgba(18,23,28,.3);
+  --f-disp:Georgia,Cambria,'PT Serif','Times New Roman',serif;
+  --f-body:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+  --f-mono:ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0E1216; --surface:#151A20; --surface-2:#1C232A; --sunk:#11161B;
+  --line:#2A323B; --line-soft:#212832;
+  --ink:#E4E9EE; --ink-2:#A7B3BE; --ink-3:#7C8894;
+  --accent:#6DBB96; --accent-2:#8CCFAE; --accent-soft:#16302B;
+  --crit:#E5897A; --crit-soft:#381D18;
+  --warn:#D3A459; --warn-soft:#332810;
+  --ok:#6DBB96; --ok-soft:#13301F;
+  --low:#8D99A5; --low-soft:#1E252D;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 12px 28px -20px rgba(0,0,0,.8);
+}}
+:root[data-theme="dark"]{
+  --bg:#0E1216; --surface:#151A20; --surface-2:#1C232A; --sunk:#11161B;
+  --line:#2A323B; --line-soft:#212832;
+  --ink:#E4E9EE; --ink-2:#A7B3BE; --ink-3:#7C8894;
+  --accent:#6DBB96; --accent-2:#8CCFAE; --accent-soft:#16302B;
+  --crit:#E5897A; --crit-soft:#381D18;
+  --warn:#D3A459; --warn-soft:#332810;
+  --ok:#6DBB96; --ok-soft:#13301F;
+  --low:#8D99A5; --low-soft:#1E252D;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 12px 28px -20px rgba(0,0,0,.8);
+}
+*{box-sizing:border-box}
+body{margin:0; background:var(--bg); color:var(--ink); font-family:var(--f-body);
+  font-size:16px; line-height:1.62; -webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{font-family:var(--f-disp); font-weight:400; margin:0; letter-spacing:-.015em; text-wrap:balance}
+h1{font-size:clamp(30px,4.6vw,48px); line-height:1.08}
+h2{font-size:clamp(23px,3vw,33px); line-height:1.16}
+h3{font-size:19px; line-height:1.3}
+h4{font-size:17px; line-height:1.3}
+p{margin:0}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent-2); outline-offset:2px; border-radius:3px}
+.mono{font-family:var(--f-mono)}
+.eyebrow{font-family:var(--f-mono); font-size:10.5px; letter-spacing:.15em; text-transform:uppercase; color:var(--ink-3)}
+.dim{color:var(--ink-3); font-size:14px}
+.lede{font-size:clamp(16.5px,1.9vw,19px); line-height:1.55; color:var(--ink-2)}
+
+.wrap{max-width:1220px; margin:0 auto; padding-inline:clamp(18px,4vw,44px)}
+.stack{display:flex; flex-direction:column; gap:clamp(16px,2.2vw,26px)}
+.stack-s{display:flex; flex-direction:column; gap:11px}
+.prose{max-width:70ch}
+
+/* header */
+.top{position:sticky; top:0; z-index:40; background:color-mix(in srgb,var(--bg) 92%,transparent);
+  backdrop-filter:blur(10px); border-bottom:1px solid var(--line)}
+.top .wrap{display:flex; align-items:center; gap:14px; padding-block:11px; flex-wrap:wrap}
+.top b{font-family:var(--f-disp); font-weight:400; font-size:17px; margin-right:auto; letter-spacing:-.02em}
+.filters{display:flex; gap:6px; flex-wrap:wrap; align-items:center}
+.fbtn{font-family:var(--f-mono); font-size:11px; letter-spacing:.04em; padding:5px 11px; border-radius:100px;
+  border:1px solid var(--line); background:var(--surface); color:var(--ink-2); cursor:pointer;
+  transition:background .14s,border-color .14s,color .14s}
+.fbtn:hover{border-color:var(--ink-3)}
+.fbtn[aria-pressed="true"]{background:var(--ink); color:var(--bg); border-color:var(--ink)}
+.fbtn.crit[aria-pressed="true"]{background:var(--crit); border-color:var(--crit); color:#fff}
+.fbtn.warn[aria-pressed="true"]{background:var(--warn); border-color:var(--warn); color:#fff}
+.fbtn.low[aria-pressed="true"]{background:var(--low); border-color:var(--low); color:#fff}
+#count{font-family:var(--f-mono); font-size:11px; color:var(--ink-3); white-space:nowrap}
+
+/* layout */
+.layout{display:grid; grid-template-columns:206px minmax(0,1fr); gap:clamp(24px,4vw,56px); align-items:start}
+@media (max-width:940px){ .layout{grid-template-columns:1fr} .toc{display:none} }
+.toc{position:sticky; top:64px; padding-block:34px}
+.toc ol{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:2px}
+.toc a{display:block; padding:5px 9px; border-radius:3px; text-decoration:none; color:var(--ink-3);
+  font-size:13.5px; line-height:1.35; border-left:2px solid transparent}
+.toc a:hover{color:var(--ink); background:var(--surface-2)}
+.toc a.cur{color:var(--ink); border-left-color:var(--accent); background:var(--surface-2)}
+main{padding-block:34px 90px; min-width:0}
+section{padding-block:clamp(30px,4vw,52px); border-top:1px solid var(--line)}
+section:first-of-type{border-top:0; padding-top:12px}
+.snum{font-family:var(--f-mono); font-size:11px; color:var(--accent); letter-spacing:.1em}
+
+/* findings */
+.f{background:var(--surface); border:1px solid var(--line); border-left-width:3px; border-radius:3px;
+  box-shadow:var(--shadow)}
+.f summary{
+  list-style:none; cursor:pointer; padding:15px 20px; display:flex; flex-direction:column; gap:7px;
+  position:relative; padding-right:44px; border-radius:2px;
+}
+.f summary::-webkit-details-marker{display:none}
+.f summary:hover{background:var(--surface-2)}
+.f summary:focus-visible{outline:2px solid var(--accent-2); outline-offset:-2px}
+.chev{
+  position:absolute; right:18px; top:19px; width:9px; height:9px; border-right:1.6px solid var(--ink-3);
+  border-bottom:1.6px solid var(--ink-3); transform:rotate(45deg); transition:transform .18s ease;
+}
+.f[open] .chev, details[open] .chev{transform:rotate(-135deg); top:23px}
+.fbody{padding:0 20px 18px; display:flex; flex-direction:column; gap:9px; border-top:1px solid var(--line-soft); padding-top:14px; margin:0 0 0 0}
+.f summary h3{margin:0}
+.f[data-sev="crit"]{border-left-color:var(--crit)}
+.f[data-sev="warn"]{border-left-color:var(--warn)}
+.f[data-sev="low"]{border-left-color:var(--low)}
+.f[hidden]{display:none}
+.fhead{display:flex; gap:7px; align-items:center; flex-wrap:wrap}
+.sev{font-family:var(--f-mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase;
+  padding:3px 9px; border-radius:100px}
+.sev.crit{background:var(--crit-soft); color:var(--crit)}
+.sev.warn{background:var(--warn-soft); color:var(--warn)}
+.sev.low{background:var(--low-soft); color:var(--low)}
+.who{font-family:var(--f-mono); font-size:10px; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--ink-3); padding:3px 0}
+.where{border-left:2px solid var(--line); padding:2px 0 2px 12px; color:var(--ink-3); font-size:14px}
+.where b{color:var(--ink-2); font-weight:600}
+.f p{font-size:15px; color:var(--ink-2)}
+.fix{background:var(--accent-soft); border-radius:3px; padding:11px 14px; font-size:14.5px; color:var(--ink)}
+.fix b{color:var(--accent); font-weight:700}
+.flist{display:flex; flex-direction:column; gap:12px}
+.empty{padding:26px; text-align:center; color:var(--ink-3); font-size:15px;
+  border:1px dashed var(--line); border-radius:3px}
+
+/* good box */
+.good{background:var(--ok-soft); border:1px solid var(--ok); border-left-width:3px; border-radius:3px; padding:18px 20px}
+.good h4{color:var(--ink)}
+.good ul{margin:10px 0 0; padding-left:19px; color:var(--ink-2); font-size:15px}
+.good li{margin-bottom:6px}
+
+/* tables */
+.tw{overflow-x:auto; border:1px solid var(--line); border-radius:3px; background:var(--surface)}
+table{border-collapse:collapse; width:100%; font-size:14.5px; min-width:560px}
+th,td{text-align:left; padding:11px 14px; border-bottom:1px solid var(--line-soft); vertical-align:top}
+th{font-family:var(--f-mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--ink-3); background:var(--surface-2); font-weight:400; white-space:nowrap}
+tr:last-child td{border-bottom:0}
+td b{font-weight:600}
+
+/* callouts */
+.note{border:1px solid var(--line); border-left:3px solid var(--accent); background:var(--surface);
+  border-radius:3px; padding:16px 20px}
+.note.red{border-left-color:var(--crit)}
+.note.amb{border-left-color:var(--warn)}
+.note h4{margin-bottom:7px}
+.note p{color:var(--ink-2); font-size:15px}
+.note p + p{margin-top:9px}
+
+.chain{width:100%; height:auto; display:block; overflow:visible}
+.chain text{font-family:var(--f-mono); font-size:10px; fill:var(--ink-3); letter-spacing:.04em}
+.chain .lbl{font-family:var(--f-body); font-size:11.5px; fill:var(--ink-2); letter-spacing:0}
+.chain .box{fill:var(--surface); stroke:var(--line)}
+.chain .box.on{stroke:var(--accent); stroke-width:1.6}
+.chain .box.off{stroke:var(--crit); stroke-dasharray:4 3}
+.chain .ln{stroke:var(--accent); stroke-width:1.6; fill:none}
+.chain .ln.brk{stroke:var(--crit); stroke-dasharray:5 4}
+
+ol.num{counter-reset:n; list-style:none; margin:0; padding:0}
+ol.num li{counter-increment:n; position:relative; padding:13px 0 13px 40px; border-bottom:1px solid var(--line-soft)}
+ol.num li::before{content:counter(n,decimal-leading-zero); position:absolute; left:0; top:15px;
+  font-family:var(--f-mono); font-size:11px; color:var(--accent)}
+ol.num b{font-weight:600}
+ol.num span{display:block; color:var(--ink-2); font-size:14.5px; margin-top:3px}
+
+footer{border-top:1px solid var(--line); padding-block:28px 60px; color:var(--ink-3); font-size:13.5px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <b>Навигатор · разбор</b>
+    <div class="filters" id="filters">
+      <button class="fbtn crit" data-sev="crit" aria-pressed="false">критично</button>
+      <button class="fbtn warn" data-sev="warn" aria-pressed="false">важно</button>
+      <button class="fbtn low" data-sev="low" aria-pressed="false">можно не делать</button>
+      <button class="fbtn" data-reset="1">все</button>
+      <button class="fbtn" id="expandAll" aria-pressed="false">развернуть всё</button>
+    </div>
+    <span id="count"></span>
+  </div>
+</header>
+
+<div class="wrap layout">
+  <aside class="toc">
+    <nav aria-label="Содержание">
+      <ol id="tocList"></ol>
+    </nav>
+  </aside>
+
+  <main>
+
+<section id="s0">
+  <div class="stack prose">
+    <div class="snum">00</div>
+    <h1>Что здесь и как это читать</h1>
+    <p class="lede">Это разбор продукта, а не отчёт о проделанной работе. Он отвечает на один
+      вопрос: что должно измениться, чтобы это сработало
+      на детях, а не на слайдах.</p>
+    <p>Юридический слой сюда намеренно почти не входит — он разобран отдельно и подробно
+      в <span class="mono">docs/01_analiz-tz.md</span>, и главный вывод там простой: до обработки
+      данных первого ребёнка нужна экспертиза профильного юриста, и это не формальность, а условие
+      старта. Здесь фокус другой: продукт, удобство и операционная реальность.</p>
+    <p>Находки помечены тремя уровнями. <b>Критично</b> — без этого продукт не работает или вредит.
+      <b>Важно</b> — сработает сейчас, станет критичным на следующем шаге. <b>Можно не делать</b> —
+      улучшение без сценария вреда. Фильтр наверху переключает уровни; счётчик показывает, сколько
+      находок видно.</p>
+    <div class="note amb">
+      <h4>Одно ограничение, которое стоит держать в голове</h4>
+      <p>В этом документе нет ни одной статистики о выпускниках детских домов. Цифры на эту тему
+        широко ходят в пересказах и часто искажены до неузнаваемости, а решения по ним принимают
+        всерьёз. Везде, где число действительно нужно, стоит пометка, что его надо взять из
+        проверенного источника или собрать самим.</p>
+    </div>
+  </div>
+</section>
+
+<section id="s1">
+  <div class="stack prose">
+    <div class="snum">01</div>
+    <h2>Главный вывод</h2>
+    <p class="lede">Центр тяжести проекта смещён. Он подан как образовательная платформа —
+      обучение плюс диагностика, — а его защитимая ценность лежит в другом месте. И самая тяжёлая
+      его проблема не в функциях, а в устройстве доверия.</p>
+
+    <h3 style="margin-top:10px">1. Взрослый, который помогает, — это тот же взрослый, от которого нужно защищать</h3>
+    <p>Куратор выдаёт ключ и восстанавливает его. Ключ — одновременно логин и пароль, пароля
+      в модели нет. Значит сотрудник учреждения может войти под любым ребёнком. Инвариант «ответы
+      видит только психолог», на котором держится вся методика, защищён интерфейсом и не защищён
+      процессом. Дальше: эскалация сигнала о неблагополучии направлена «ответственному лицу
+      организации», то есть внутрь той организации, о которой может идти речь. И у ребёнка ноль
+      каналов к любому взрослому вне учреждения: сообщения только входящие, чат закрыт, флаг
+      «просил о встрече» ставит взрослый.</p>
+    <p>К этой конструкции независимо пришли четыре разбора из шести. Подросток вычисляет её за день
+      и начинает отвечать правильно вместо честного — <b>что для проекта хуже, чем если бы он
+      ушёл</b>: ушедшего видно в метрике, а осторожный остаётся и портит данные.</p>
+
+    <h3 style="margin-top:10px">2. Инструмент измеряет доступ, а не склонность</h3>
+    <p>Три из пяти шкал требуют, чтобы у ребёнка <b>уже был</b> инструмент, камера или животные.
+      Варианта «не пробовал» в шкале нет, поэтому отсутствие опыта уходит в ноль и читается как
+      «не твоё». Пробелы опыта распределены не случайно — их больше там, где учреждение ограничивает
+      доступ. Итог: <b>тест систематически рекомендует то, к чему у ребёнка уже был доступ.</b>
+      Проект существует, чтобы расширить выбор; инструмент внутри проекта его сужает.</p>
+
+    <h3 style="margin-top:10px">3. Физика не сходится</h3>
+    <p>Один компьютер на группу, курс на 12 часов, 12 детей — это 144 часа машинного времени, то есть
+      почти учебное полугодие на один курс. Куратору продукт стоит до двух с половиной часов в день,
+      и они не заложены ни в чью нагрузку. Ни одно из этих чисел в ТЗ не появляется. Каталог
+      написан так, будто у детей есть личные устройства и свободное время.</p>
+
+    <h3 style="margin-top:10px">4. Продукт заканчивается там, где начинается заявленная цель</h3>
+    <p>Цель — «помочь адаптироваться ко взрослой жизни и профессии». Путь заканчивается сертификатом.
+      В 18 лет одновременно прекращаются полномочия представителя, ребёнок выходит из учреждения
+      и ключ теряет привязку — то есть аккаунт становится невосстановимым ровно тогда, когда
+      поддержка нужнее всего. При этом метрика «доля дошедших до сертификата» может расти три года
+      подряд, пока проект не делает того, что обещал, и все внутри будут добросовестны.</p>
+
+    <h3 style="margin-top:10px">5. Сильная часть продукта нигде не названа сильной</h3>
+    <p>Большая часть ТЗ описывает обычную систему дистанционного обучения — уроки, тесты,
+      сертификаты, кабинет. Такое устроено везде одинаково, и ничего своего в этом нет. При этом
+      по-настоящему своё в проекте есть, и оно нигде не выделено: <b>согласие как объект системы</b>
+      (ключ не выпускается без документа-основания, истёкшее согласие само закрывает доступ),
+      <b>архитектура доступа</b>, где сотрудник учреждения не видит профиль ребёнка, и <b>кураторский
+      контур</b> — взрослый, который замечает пропавшего. Это и есть то, ради чего проект стоит
+      делать, а в описании оно теряется среди плееров и вебинаров.</p>
+
+    <div class="note" style="margin-top:6px">
+      <h4>Если переформулировать одним предложением</h4>
+      <p>Это не платформа обучения. Это <b>инструмент распределения дефицитного внимания взрослых
+        и работы с согласиями</b> — то, что позволяет одному куратору вести тридцать детей вместо
+        пяти, а фонду работать с данными этой категории детей законно и повторяемо. В такой рамке
+        центром продукта становится не видеоплеер, а пульт куратора, реестр согласий и обнаружение
+        сигналов. Само обучение при этом может опираться на готовые решения — а уникальная часть
+        остаётся целиком.</p>
+    </div>
+  </div>
+</section>
+
+<section id="s2">
+  <div class="stack">
+    <div class="prose stack">
+      <div class="snum">02</div>
+      <h2>ТЗ как документ: что с ним не так</h2>
+      <p class="lede">Не придирка к стилю. От того, чем является этот документ, зависит, что
+        произойдёт со сметой и с проектом.</p>
+      <p>Объём — 4821 знак на 23 раздела, то есть около 200 знаков на раздел. Это примерно одно
+        предложение на каждую тему, включая темы «Безопасность», «Аналитика» и «Этапы реализации».
+        Документ описывает не продукт, а <b>оболочку</b>: перечень того, что бывает у платформ
+        такого класса.</p>
+    </div>
+
+    <div class="flist">
+      <article class="f" data-sev="crit" data-role="doc">
+<details>
+<summary>
+<div class="fhead"><span class="sev crit">критично</span><span class="who">ТЗ</span></div>
+<h3>Разделы — это списки существительных, а не требования</h3>
+<span class="chev" aria-hidden="true"></span>
+</summary>
+<div class="fbody">
+<div class="where"><b>§8:</b> «Функции: загрузка курсов, категории, уровни сложности,
+          прогресс, тестирование, балльная система.»</div>
+        <p>Требование отвечает на вопрос «что должно быть правдой, чтобы мы считали это сделанным».
+          Здесь ни у одного пункта нет ни критерия, ни ограничения, ни сценария. Подрядчик не может
+          это оценить — он может только угадать, и каждый угадает по-своему. Отсюда разброс смет
+          в разы, который делает выбор подрядчика невозможным.</p>
+        <div class="fix"><b>Что делать:</b> не переписывать ТЗ целиком, а к каждому разделу дописать
+          одну строку «сделано, если…». Это работа на день, и она сокращает разброс смет сильнее,
+          чем любые уточнения формулировок.</div>
+</div>
+</details>
+</article>
+
+      <article class="f" data-sev="crit" data-role="doc">
+<details>
+<summary>
+<div class="fhead"><span class="sev crit">критично</span><span class="who">ТЗ</span></div>
+<h3>Требуется всё сразу, приоритета нет</h3>
+<span class="chev" aria-hidden="true"></span>
+</summary>
+<div class="fbody">
+<div class="where"><b>§8:</b> «Поддержка видеокурсов, текстовых материалов, тестов, домашних
+          заданий, интерактивных уроков, вебинаров и прямых эфиров.»</div>
+        <p>Семь форматов доставки контента одновременно, на старте, для аудитории, у которой
+          в лучшем случае общий компьютер и нестабильный интернет. Так выглядит перечисление
+          категории «что бывает в LMS», а не выбор под задачу. Каждый формат — отдельный
+          отдельный производственный процесс, и вебинары с прямыми эфирами тяжелее всего
+          остального вместе взятого.</p>
+        <div class="fix"><b>Что делать:</b> оставить на первый год два формата — текст и короткое
+          видео — и прямо записать в ТЗ, что остальное вне объёма. Это сокращает работу сильнее, чем
+          любая оптимизация разработки.</div>
+</div>
+</details>
+</article>
+
+      <article class="f" data-sev="warn" data-role="doc">
+<details>
+<summary>
+<div class="fhead"><span class="sev warn">важно</span><span class="who">ТЗ</span></div>
+<h3>Следы шаблона, не относящиеся к этому проекту</h3>
+<span class="chev" aria-hidden="true"></span>
+</summary>
+<div class="fbody">
+<div class="where"><b>§19:</b> «Интеграции: Zoom, Google Meet, LMS/CRM, электронные
+          сертификаты, платёжная система (на будущее).»</div>
+        <p>Платёжная система в платформе, пользователи которой — дети-сироты, а доступ закрытый и
+          бесплатный. CRM — в продукте без продаж. Zoom и Google Meet — как данность, при том что
+          для этой аудитории и этих данных выбор видеосвязи не бытовой вопрос. Такие пункты
+          безобидны сами по себе, но подрядчик закладывает их в оценку, а проверяющий по ним
+          задаёт вопросы.</p>
+        <div class="fix"><b>Что делать:</b> вычеркнуть платёжную систему и CRM; видеосвязь описать
+          не брендами, а требованием («размещение в РФ, без записи консультаций по умолчанию»).</div>
+</div>
+</details>
+</article>
+
+      <article class="f" data-sev="crit" data-role="doc">
+<details>
+<summary>
+<div class="fhead"><span class="sev crit">критично</span><span class="who">ТЗ</span></div>
+<h3>Документ сам признаёт, что в нём нет главного</h3>
+<span class="chev" aria-hidden="true"></span>
+</summary>
+<div class="fbody">
+<div class="where"><b>§23:</b> «Важно разделить проект на MVP и последующие этапы, прописать
+          пользовательские сценарии (user flow), экраны (wireframes), юридические требования по
+          работе с несовершеннолетними и метрики успеха проекта.»</div>
+        <p>Это перечень ровно того, что и составляет техническое задание. Документ, который
+          заканчивается рекомендацией написать техническое задание, — это не ТЗ, а бриф.
+          И относиться к нему нужно соответственно: как к началу разговора, а не как к основанию
+          для договора с фиксированной ценой.</p>
+        <div class="fix"><b>Что делать:</b> перестать называть это ТЗ в переписке с подрядчиками.
+          Назвать брифом, приложить собранный интерфейс и список вопросов — тогда подрядчик
+          отвечает на понятную задачу, а не выдумывает недостающее за вас.</div>
+</div>
+</details>
+</article>
+
+      <article class="f" data-sev="crit" data-role="doc">
+<details>
+<summary>
+<div class="fhead"><span class="sev crit">критично</span><span class="who">ТЗ</span></div>
+<h3>Слово «слабые стороны» в цели проекта</h3>
+<span class="chev" aria-hidden="true"></span>
+</summary>
+<div class="fbody">
+<div class="where"><b>§1:</b> «…помогает выявить сильные и слабые стороны ребёнка…»</div>
+        <p>Это формулировка цели, то есть она определяет продукт целиком. Система, которая
+          сообщает подростку из учреждения его слабые стороны, получит от него защитные ответы, а
+          не честные — и тем самым уничтожит достоверность собственной методики. Кроме того, это
+          прямо противоречит §6, где сказано «без постановки диагнозов».</p>
+        <div class="fix"><b>Что делать:</b> заменить на «сильные стороны и зоны роста», а в
+          интерфейсе ребёнка не показывать нижние позиции рейтинга вообще. В собранном интерфейсе
+          это уже так и сделано — нужно закрепить в ТЗ, чтобы подрядчик не вернул как было.</div>
+</div>
+</details>
+</article>
+
+      <article class="f" data-sev="crit" data-role="doc">
+<details>
+<summary>
+<div class="fhead"><span class="sev crit">критично</span><span class="who">ТЗ</span></div>
+<h3>Самое опасное слово документа — «(опционально)»</h3>
+<span class="chev" aria-hidden="true"></span>
+</summary>
+<div class="fbody">
+<div class="where"><b>§3:</b> «Куратор/наставник (опционально): сопровождение и мониторинг
+          прогресса.»</div>
+        <p>Единственная роль, помеченная как необязательная, — это единственный взрослый, который
+          заметит, что ребёнок не заходил три недели. Без неё продукт превращается в
+          самообслуживаемый онлайн-курс для аудитории с наименьшей на свете вероятностью
+          самостоятельно дойти до конца. Все заявленные результаты проекта висят на роли, которую
+          ТЗ разрешает не делать.</p>
+        <div class="fix"><b>Что делать:</b> перенести куратора в обязательные роли первого этапа и
+          записать это как условие пилота: учреждение, которое не выделяет куратора, в пилот не
+          входит. Это не ужесточение, а защита от заведомо провального запуска.</div>
+</div>
+</details>
+</article>
+
+      <article class="f" data-sev="warn" data-role="doc">
+<details>
+<summary>
+<div class="fhead"><span class="sev warn">важно</span><span class="who">ТЗ</span></div>
+<h3>Метрик успеха нет ни одной</h3>
+<span class="chev" aria-hidden="true"></span>
+</summary>
+<div class="fbody">
+<div class="where"><b>§15:</b> «Активность, успеваемость, завершение курсов, вовлечённость,
+          статистика по регионам.»</div>
+        <p>Это метрики процесса: они говорят, что происходит внутри платформы, и ничего — о том,
+          изменилось ли что-то в жизни ребёнка. По ним нельзя ни принять решение о продолжении
+          понять, что проект работает. §23 требует «метрики успеха» и не
+          называет ни одной.</p>
+        <div class="fix"><b>Что делать:</b> зафиксировать до старта три числа результата и способ
+          их сбора. Как минимум: доля дошедших от входа до сертификата; доля вернувшихся на седьмой
+          день; и главное — что происходит с выпускниками через год, а это платформа сама собрать
+          не может и нужен отдельный процесс опроса.</div>
+</div>
+</details>
+</article>
+    </div>
+  </div>
+</section>
+
+<section id="s3">
+  <div class="stack">
+    <div class="prose stack">
+      <div class="snum">03</div>
+      <h2>Где рвётся цепочка</h2>
+      <p class="lede">Заявленная цель — «помочь адаптироваться ко взрослой жизни и профессии»
+        (§1). Построенный путь заканчивается сертификатом и мониторингом прогресса. Между этими
+        двумя точками — разрыв, который ТЗ не признаёт.</p>
+    </div>
+
+    <svg class="chain" viewBox="0 0 900 150" role="img"
+      aria-label="Цепочка: диагностика, курс, аттестация и сертификат внутри платформы соединены; дальше связь с колледжем или работодателем, наставником и жизнью после восемнадцати обозначена разрывом — платформа этих звеньев не закрывает">
+      <text x="0" y="12">ЧТО ПЛАТФОРМА ДЕЛАЕТ</text>
+      <text x="527" y="12" fill="currentColor" style="fill:var(--crit)">ЧЕГО НЕ ДЕЛАЕТ, НО ОБЕЩАЕТ</text>
+      <line class="ln" x1="8" y1="60" x2="500" y2="60"/>
+      <line class="ln brk" x1="527" y1="60" x2="892" y2="60"/>
+      <g>
+        <rect class="box on" x="8" y="44" width="112" height="32" rx="2"/>
+        <text class="lbl" x="64" y="64" text-anchor="middle">склонности</text>
+        <rect class="box on" x="140" y="44" width="112" height="32" rx="2"/>
+        <text class="lbl" x="196" y="64" text-anchor="middle">курс</text>
+        <rect class="box on" x="272" y="44" width="112" height="32" rx="2"/>
+        <text class="lbl" x="328" y="64" text-anchor="middle">аттестация</text>
+        <rect class="box on" x="404" y="44" width="112" height="32" rx="2"/>
+        <text class="lbl" x="460" y="64" text-anchor="middle">сертификат</text>
+        <rect class="box off" x="536" y="44" width="112" height="32" rx="2"/>
+        <text class="lbl" x="592" y="64" text-anchor="middle" style="fill:var(--crit)">колледж</text>
+        <rect class="box off" x="668" y="44" width="112" height="32" rx="2"/>
+        <text class="lbl" x="724" y="64" text-anchor="middle" style="fill:var(--crit)">работа</text>
+        <rect class="box off" x="800" y="44" width="92" height="32" rx="2"/>
+        <text class="lbl" x="846" y="64" text-anchor="middle" style="fill:var(--crit)">жизнь</text>
+      </g>
+      <line x1="516" y1="28" x2="516" y2="96" stroke="var(--crit)" stroke-width="1.4" stroke-dasharray="3 3"/>
+      <text x="516" y="112" text-anchor="middle" style="fill:var(--crit)">18 ЛЕТ · АККАУНТ ЗАКРЫВАЕТСЯ</text>
+      <text class="lbl" x="8" y="132" style="fill:var(--ink-3)">Платформа измеряет левую часть и отчитывается ею как результатом правой.</text>
+    </svg>
+
+    <div class="prose stack">
+      <p>Сертификат — это доказательство, что ребёнок прошёл курс. Он ничего не говорит о том,
+        поступил ли он, взяли ли его на работу и справился ли он в первый год один. При этом
+        именно правая часть цепочки заявлена целью и именно её будут ждать учредитель и партнёры.</p>
+      <p>Разрыв усугубляется механикой: аккаунт привязан к учреждению и к согласию законного
+        представителя. В восемнадцать лет прекращается и то, и другое — ровно в тот момент, когда
+        поддержка нужнее всего. Продукт устроен так, что бросает человека на самом трудном пороге
+        и в этот же момент теряет возможность узнать, сработал ли он.</p>
+    </div>
+  </div>
+</section>
+
+<section id="s4">
+  <div class="stack">
+    <div class="prose stack">
+      <div class="snum">04</div>
+      <h2>Разбор по ролям</h2>
+      <p class="lede">Шесть участников цепочки, каждый из которых может проект убить. В ТЗ они
+        перечислены списком, но ничьими глазами продукт не проверялся.</p>
+    </div>
+    <div class="note red">
+      <h4>Сходимость: три независимых разбора пришли к одному</h4>
+      <p>Разборы велись параллельно, вслепую друг к другу. Перспектива подростка и перспектива
+        куратора независимо уткнулись в одну конструкцию — и это самая тяжёлая находка всего
+        документа, потому что она не про функцию, а про устройство доверия.</p>
+      <p><b>Взрослый, который должен помогать ребёнку, — это тот же взрослый, от которого ребёнка
+        нужно защищать, и именно он держит ключи.</b> Куратор выдаёт ключ, куратор его
+        восстанавливает, ключ одновременно и логин и пароль, пароля в модели нет. Значит сотрудник
+        учреждения может войти под любым ребёнком. Инвариант «ответы видит только психолог», на
+        котором держится вся методика, защищён интерфейсом и не защищён процессом. Подросток
+        вычисляет это за день — и дальше отвечает правильно вместо честного, что для проекта хуже,
+        чем если бы он ушёл.</p>
+      <p>Замыкают конструкцию ещё два факта: регламент эскалации отправляет сигнал о неблагополучии
+        «ответственному лицу организации» — то есть внутрь той организации, о которой может идти
+        речь; а у ребёнка в продукте <b>ноль</b> каналов к любому взрослому вне учреждения. Сообщения
+        только входящие, чат закрыт, флаг «просил о встрече» ставит взрослый.</p>
+    </div>
+
+    <div data-group>
+      <h3 style="margin-top:14px">Подросток 15 лет, третий год в учреждении</h3>
+      <p class="dim">Где он закроет вкладку, где соврёт в ответах, где ему станет стыдно.</p>
+      <div class="good" style="margin-top:12px">
+        <h4>Что попало в точку — не трогать</h4>
+        <ul>
+          <li>Названа конкретная роль, которой он боится: «преподаватель, куратор и <b>воспитатель</b>
+            видят лишь то, какой курс ты выбрал». Не «ваши данные защищены», а имя страха.</li>
+          <li>Исключение из тайны названо заранее, до первого ответа, а не всплывает потом.</li>
+          <li>Размер файла подписан фактом без жалости: «~200 КБ, откроется на любом канале».
+            Текст — режим по умолчанию, а не «облегчённая версия для бедных».</li>
+          <li>Тон урока: «Отвёртка держится не пальцами, а всей ладонью». Ни одного «давай разберёмся
+            вместе», ни одного восклицательного знака. Так должен звучать весь продукт.</li>
+          <li>Сертификат не выдаёт статус: ни учреждения, ни возраста, ни намёка на происхождение.</li>
+        </ul>
+      </div>
+      <div class="flist" style="margin-top:14px">
+
+        <article class="f" data-sev="crit" data-role="child">
+<details>
+<summary>
+<div class="fhead"><span class="sev crit">критично</span><span class="who">Ребёнок</span></div>
+<h3>Пятнадцать личных утверждений полотном, на общем компьютере</h3>
+<span class="chev" aria-hidden="true"></span>
+</summary>
+<div class="fbody">
+<div class="where"><b>Где:</b> экран склонностей рендерит все 15 карточек одним полотном,
+            выбранный ответ подсвечен заливкой — виден с трёх метров. Кнопка результата заблокирована,
+            пока не отвечено на все пятнадцать.</div>
+          <p>За плечом очередь к единственной машине. «Я замечаю, когда человеку рядом плохо»
+            крупным шрифтом с подсвеченным ответом — готовый материал, чтобы это цитировали в комнате
+            через день. Он отвечает не про себя, а про того, кем безопасно быть при свидетелях.
+            А заблокированная кнопка — это требование, и у подростка на требование есть два ответа:
+            закрыть вкладку или прокликать «не про меня» пятнадцать раз. Второе проще и оставляет
+            в базе данные, которые выглядят как результат.</p>
+          <div class="fix"><b>Что сделать:</b> один вопрос на экран; кнопка «Свернуть» и Esc, мгновенно
+            подменяющие содержимое каталогом; автоскрытие при потере фокуса окна. Кнопка результата
+            активна после восьми ответов, у каждого утверждения — «Пропустить», и пропуск не считается
+            нулём. Пропущено больше половины — профиль не выдаётся вовсе.</div>
+</div>
+</details>
+</article>
+
+        <article class="f" data-sev="crit" data-role="child">
+<details>
+<summary>
+<div class="fhead"><span class="sev crit">критично</span><span class="who">Ребёнок</span></div>
+<h3>Вопросы предполагают жизнь, которой у него нет</h3>
+<span class="chev" aria-hidden="true"></span>
+</summary>
+<div class="fbody">
+<div class="where"><b>Где:</b> «Что тебе ближе, когда есть свободный час?» → «Разобрать и
+            починить что-нибудь», «Порисовать, снять видео». «Где бы ты скорее провёл целый день?» →
+            «В мастерской».</div>
+          <p>Чтобы «разобрать и починить», нужен инструмент и своя вещь. Чтобы «снять видео» — свой
+            телефон. Мастерской в учреждении нет — это написано на нашем же лендинге. Ни один вариант
+            не описывает то, что он делал; все описывают жизнь других детей. Он выбирает не «что мне
+            ближе», а «что звучит лучше про меня» — то есть врёт на первом же вопросе, и вся модель
+            строится на этом. Варианта «ничего из этого» нет.</p>
+          <div class="fix"><b>Что сделать:</b> перевести в прошедшее время и в доступные ресурсы:
+            «Что из этого ты уже делал, хотя никто не просил? — разбирал или чинил, своё или чужое ·
+            снимал или рисовал, хоть на чужом телефоне · объяснял кому-то, как сделать · ничего из
+            этого». Множественный выбор, «ничего» не блокирует и не начисляет баллы.</div>
+</div>
+</details>
+</article>
+
+        <article class="f" data-sev="crit" data-role="child">
+<details>
+<summary>
+<div class="fhead"><span class="sev crit">критично</span><span class="who">Ребёнок</span></div>
+<h3>Первое настоящее задание физически невыполнимо</h3>
+<span class="chev" aria-hidden="true"></span>
+</summary>
+<div class="fbody">
+<div class="where"><b>Где:</b> «Закрути два самореза: один в дерево, один в гипсокартон
+            с дюбелем… Сфотографируй результат».</div>
+          <p>Требуется: саморезы, дюбель, кусок дерева, кусок гипсокартона, отвёртка, разрешение
+            сверлить стену в учреждении, свободный взрослый и камера. Причём система уже знает, что
+            камеры может не быть — в анкете он мог выбрать «общий компьютер в классе» — и всё равно
+            показывает кнопку «Прикрепить фото». Первое реальное действие в продукте упирается
+            в «попроси взрослого и найди материалы», то есть подтверждает исходную гипотезу: здесь
+            тоже ничего нельзя сделать самому.</p>
+          <div class="fix"><b>Что сделать:</b> правило для первого этапа — ни одно задание не требует
+            того, чего у ребёнка может не быть. Сдача текстом всегда равноправна, а не запасная.
+            Если указан общий компьютер, кнопки «Прикрепить фото» нет вовсе. Само задание — то, что
+            делается пустыми руками: найти в комнате три разных самореза и определить, какая бита
+            к каждому подходит.</div>
+</div>
+</details>
+</article>
+
+        <article class="f" data-sev="crit" data-role="child">
+<details>
+<summary>
+<div class="fhead"><span class="sev crit">критично</span><span class="who">Ребёнок</span></div>
+<h3>Профиль — это оценка, которую нельзя оспорить</h3>
+<span class="chev" aria-hidden="true"></span>
+</summary>
+<div class="fbody">
+<div class="where"><b>Где:</b> три полосы разной длины под заголовком «Твои сильные
+            стороны». Внутренняя пометка на том же экране: «Баллы ребёнку не показываем — цифру „3“
+            он прочтёт как тройку в дневнике».</div>
+          <p>Полоса на 100% рядом с полосой на 45% — это и есть цифра, просто нарисованная. Хуже:
+            тот же самый визуальный элемент используется в кабинете для прогресса по курсу, поэтому
+            смысл читается однозначно — «сколько у тебя есть». Решение команды не показывать баллы
+            обойдено собственной вёрсткой. И возразить нечем: единственный способ изменить вердикт —
+            «Пройти заново», то есть подогнать ответы. Продукт обучает ровно тому навыку, который
+            у этой аудитории и так развит.</p>
+          <div class="fix"><b>Что сделать:</b> убрать полосы из детского экрана, показать два-три
+            направления равными карточками без порядка и без «первого места». И добавить возражение
+            как штатное действие: кнопки «Похоже на меня» и «Не про меня — покажи другое». Вторая
+            открывает ручной выбор и помечает профиль как уточнённый самим ребёнком. Это единственное
+            место, где можно отработать «всё равно решат за меня», и сейчас оно пустует.</div>
+</div>
+</details>
+</article>
+
+        <article class="f" data-sev="crit" data-role="child">
+<details>
+<summary>
+<div class="fhead"><span class="sev crit">критично</span><span class="who">Ребёнок</span></div>
+<h3>На сертификате напечатана оценка</h3>
+<span class="chev" aria-hidden="true"></span>
+</summary>
+<div class="fbody">
+<div class="where"><b>Где:</b> блок «Результат» на самом бланке выводит балл аттестации
+            при проходном пороге 3 из 5.</div>
+          <p>Единственный предмет, который он может кому-то показать, несёт на себе его балл. При
+            пороге 3 продукт массово выпускает документы с надписью «3 из 5» — показывать такое
+            в колледже хуже, чем не показывать ничего. Заодно это обнуляет решение «не показывать
+            баллы ребёнку»: балл всё равно вылезает, причём ровно в том месте, которое он унесёт
+            с собой.</p>
+          <div class="fix"><b>Что сделать:</b> на бланке — «курс пройден, аттестация сдана», номер,
+            дата, курс. Балл остаётся в кабинете и в журнале-снапшоте, но не на документе.</div>
+</div>
+</details>
+</article>
+
+        <article class="f" data-sev="crit" data-role="child">
+<details>
+<summary>
+<div class="fhead"><span class="sev crit">критично</span><span class="who">Ребёнок</span></div>
+<h3>Нет экрана «Мои данные» — все обещания непроверяемы</h3>
+<span class="chev" aria-hidden="true"></span>
+</summary>
+<div class="fbody">
+<div class="where"><b>Где:</b> матрица «кто что видит» существует только на экране
+            администратора. Журнал действий — тоже только там.</div>
+          <p>Всё, что продукт обещает про приватность, он обещает словами в абзацах, разбросанных
+            по трём экранам. Ни одно обещание нельзя проверить. Для пользователя, у которого
+            недоверие ко взрослым — рабочая гипотеза, а не каприз, непроверяемое обещание равно
+            отсутствию обещания.</p>
+          <div class="fix"><b>Что сделать:</b> экран «Мои данные» с трёх блоков: что о тебе есть
+            (человеческим языком); <b>кто это смотрел</b> — реальные строки журнала, тот же источник,
+            что у администратора («12.08 — психолог открывал твой профиль»); что можно стереть.
+            Симметричная слежка — самый дешёвый и самый сильный сигнал доверия во всём проекте.
+            Заодно это реализует отзыв согласия со стороны самого субъекта.</div>
+</div>
+</details>
+</article>
+
+        <article class="f" data-sev="crit" data-role="child">
+<details>
+<summary>
+<div class="fhead"><span class="sev crit">критично</span><span class="who">Ребёнок</span></div>
+<h3>Встречу с психологом назначили за него и повесили на виду</h3>
+<span class="chev" aria-hidden="true"></span>
+</summary>
+<div class="fbody">
+<div class="where"><b>Где:</b> блок «Ближайшее» в кабинете: «Разговор с психологом —
+            пт 15:30».</div>
+          <p>Встречу он не просил, её поставили. «Тебя вызвали к психологу» в учреждении — это не
+            забота, а процедура, и у неё есть социальная цена среди своих. Плюс строка стоит на
+            главном экране кабинета, то есть видна любому, кто стоит рядом у общего компьютера.
+            Показательно, что в данных психолога уже есть флаг «просил о встрече» — модель «по
+            запросу» задумана, но у ребёнка нет ни кнопки запроса, ни защиты от назначения.</p>
+          <div class="fix"><b>Что сделать:</b> платформа не назначает ребёнку встречу с психологом.
+            Инициатива только его; куратор может предложить, и «нет» ничего за собой не влечёт
+            и никому не отправляется. В блоке «Ближайшее» роль не раскрывается: «Встреча · пт 15:30»,
+            подробности внутри по клику.</div>
+</div>
+</details>
+</article>
+
+        <article class="f" data-sev="warn" data-role="child">
+<details>
+<summary>
+<div class="fhead"><span class="sev warn">важно</span><span class="who">Ребёнок</span></div>
+<h3>«Молодец, продолжай» — от человека, который за тобой наблюдает</h3>
+<span class="chev" aria-hidden="true"></span>
+</summary>
+<div class="fbody">
+<div class="where"><b>Где:</b> сообщение в кабинете: «Видела, что ты дошёл до третьего
+            урока. Молодец, продолжай».</div>
+          <p>Первая половина фразы сообщает, что за экраном следят, вторая выдаёт награду за
+            послушание. Это точная интонация, которой его три года хвалят за то, что поел и не
+            подрался. Результат — не мотивация, а подтверждение, что платформа встроена в тот же
+            контур присмотра.</p>
+          <div class="fix"><b>Что сделать:</b> сообщение взрослого несёт действие или ресурс, а не
+            оценку: «Если для задания нужны саморезы и отвёртка — скажи, принесу». И правило,
+            проверяемое поиском по шаблонам: в автосообщениях нет слов «молодец», «умница»,
+            «так держать».</div>
+</div>
+</details>
+</article>
+
+        <article class="f" data-sev="warn" data-role="child">
+<details>
+<summary>
+<div class="fhead"><span class="sev warn">важно</span><span class="who">Ребёнок</span></div>
+<h3>Самый тревожный вопрос его жизни — на третьем экране знакомства</h3>
+<span class="chev" aria-hidden="true"></span>
+</summary>
+<div class="fbody">
+<div class="where"><b>Где:</b> анкета, шаг «Планы»: «Что думаешь после выпуска» →
+            «Колледж / Работа сразу / Ещё не думал».</div>
+          <p>«Выпуск» для него — не окончание школы, а выход из учреждения: день, когда исчезают
+            жильё, еда и все взрослые сразу. Продукт задаёт это в форме выпадающего списка, среди
+            вариантов которого нет настоящего. Он выберет «ещё не думал», чтобы закрыть вопрос, —
+            и эта ложь ляжет в профиль.</p>
+          <div class="fix"><b>Что сделать:</b> из онбординга убрать. Ближний горизонт вместо
+            дальнего: «Что тебе сейчас интереснее — попробовать руками что-то конкретное ·
+            посмотреть, из чего вообще выбирают · учиться чему-то одному всерьёз». Вопрос про после
+            выпуска — после первого сертификата и в формулировке про возможность: «Хочешь
+            посмотреть, куда с этим берут после девятого?»</div>
+</div>
+</details>
+</article>
+
+        <article class="f" data-sev="warn" data-role="child">
+<details>
+<summary>
+<div class="fhead"><span class="sev warn">важно</span><span class="who">Ребёнок</span></div>
+<h3>Метрики меряют расписание компьютерного класса, а не его старание</h3>
+<span class="chev" aria-hidden="true"></span>
+</summary>
+<div class="fbody">
+<div class="where"><b>Где:</b> плитка «Дней подряд — 5», «Дедлайн по заданию — через
+            2 дня», у куратора — «Последний вход: 19 дней назад».</div>
+          <p>Серия обнуляется от того, что он не контролирует: класс закрыт, каникулы, карантин,
+            перевод. Обнуление читается как «ты всё потерял», причём по чужой вине — отличный повод
+            больше не начинать. Дедлайн просрочивается у ребёнка, который всё сделал, но не смог
+            сесть за компьютер. И всё это видно взрослому как показатель прилежания.</p>
+          <div class="fix"><b>Что сделать:</b> в интерфейсе ребёнка не должно быть ни одной метрики,
+            которая уменьшается от пропуска. «Дней подряд» → «уроков всего». Дедлайнов у ребёнка
+            нет вовсе: очередь и сроки — забота преподавателя, ребёнку «сдай, когда сделаешь».</div>
+</div>
+</details>
+</article>
+      </div>
+    </div>
+
+    <div data-group>
+      <h3 style="margin-top:30px">Куратор: 20 лет стажа, группа 12–30 детей, один компьютер</h3>
+      <p class="dim">Роль, на которую поставлен главный продуктовый риск. Проверка реальностью
+        рабочего дня.</p>
+      <div class="good" style="margin-top:12px">
+        <h4>Что сделано правильно — не трогать</h4>
+        <ul>
+          <li>Ответ анкеты про устройство реально меняет выдачу контента. Связь «что сказал → что
+            показали» замкнута, а не задекларирована.</li>
+          <li>Выход из аккаунта действительно стирает состояние, и честно помечено, что автозакрытие
+            сессии ещё не сделано, а не выдано за готовое.</li>
+          <li>Курс «Взрослая жизнь» подмешивается в любую рекомендацию независимо от профиля — для
+            этой аудитории он нужен безусловно и не отдан на волю теста.</li>
+          <li>Реквизит «тип законного представителя» у ключа. В этом классе проектов его не
+            закладывают почти никогда, а без него согласие подписывает не тот человек.</li>
+        </ul>
+      </div>
+      <div class="flist" style="margin-top:14px">
+
+        <article class="f" data-sev="crit" data-role="curator">
+<details>
+<summary>
+<div class="fhead"><span class="sev crit">критично</span><span class="who">Куратор</span></div>
+<h3>Не решено, кто такой куратор физически</h3>
+<span class="chev" aria-hidden="true"></span>
+</summary>
+<div class="fbody">
+<div class="where"><b>Где:</b> в списке одного куратора — дети из трёх разных учреждений,
+            а действие в колонке «что сделать» — «пропал, позвать лично».</div>
+          <p>Это две несовместимые должности, и продукт не выбрал ни одну. Если куратор —
+            воспитатель учреждения, он может «позвать лично», но не имеет права видеть детей двух
+            других учреждений: это межучрежденческий доступ к данным несовершеннолетних под опекой,
+            которого нет ни в матрице доступа, ни в анализе. Если он сотрудник фонда — доступ
+            законен, но «позвать лично» физически невозможно, он в другом городе, и его единственный
+            инструмент — позвонить воспитателю, которого в системе нет вовсе.</p>
+          <div class="fix"><b>Что сделать:</b> развести до начала разработки. <b>Воспитатель-куратор</b> —
+            привязан к одному учреждению, видит только своих, имеет физические действия.
+            <b>Координатор фонда</b> — видит несколько учреждений в агрегате, без пофамильного
+            списка, его действие — связаться с воспитателем, и это действие в продукте существует.</div>
+</div>
+</details>
+</article>
+
+        <article class="f" data-sev="crit" data-role="curator">
+<details>
+<summary>
+<div class="fhead"><span class="sev crit">критично</span><span class="who">Куратор</span></div>
+<h3>Роль объявлена обязательной, а рабочего места у неё нет</h3>
+<span class="chev" aria-hidden="true"></span>
+</summary>
+<div class="fbody">
+<div class="where"><b>Где:</b> у куратора один экран (у психолога два, у администратора
+            три), и на нём нет ни одной кнопки: «Пропал — позвать лично», «Напомнить» — это
+            статические метки, а не действия.</div>
+          <p>Роль, на которую поставлен главный риск проекта, получила самый бедный интерфейс,
+            и он только для чтения. Куратор не может отметить, что уже поговорила; поставить
+            напоминание; записать, что ребёнок в санатории; передать группу сменщице; попросить
+            психолога посмотреть. Единственный способ отработать метку — уйти от компьютера и найти
+            ребёнка. Система об этом не узнает и завтра покажет то же самое. Через неделю таблица
+            показывает не «что надо сделать», а «чего система по-прежнему не знает».</p>
+          <div class="fix"><b>Что сделать:</b> минимальный набор действий по кнопке в строке:
+            «Поговорила» (гасит метку до следующего порога), «Отложить до…», «Отсутствует по
+            причине» (каникулы, санаторий, карантин, перевод), «Позвать психолога». Критерий
+            приёмки: после любого действия строка меняет вид, а в журнале появляется именная
+            запись.</div>
+</div>
+</details>
+</article>
+
+        <article class="f" data-sev="crit" data-role="curator">
+<details>
+<summary>
+<div class="fhead"><span class="sev crit">критично</span><span class="who">Куратор</span></div>
+<h3>Один компьютер: курс не помещается в учебный год</h3>
+<span class="chev" aria-hidden="true"></span>
+</summary>
+<div class="fbody">
+<div class="where"><b>Где:</b> каталог курсов — от 8 до 24 часов. Вопрос 5 заказчику,
+            вариант A: «30–80 детей, общий компьютерный класс».</div>
+          <p>Арифметика при допущении «машина доступна 2 часа в день, 5 дней в неделю, и не занята
+            ничем другим». Группа 12 детей × 12 часов курса = <b>144 часа машинного времени</b>,
+            то есть 14–15 недель при стопроцентной загрузке и нулевых пропусках — почти полугодие
+            на один курс. Группа 25 детей — учебный год. Курс «Питон» на 24 часа для группы 25
+            детей требует 600 часов и физически невозможен на одной машине. Это допущения, а не
+            измерение, и их надо проверить на пилоте — но порядок величины не меняется.</p>
+          <div class="fix"><b>Что сделать:</b> до пилота зафиксировать в договоре с учреждением два
+            числа — сколько рабочих мест и сколько часов в неделю они доступны платформе. Дальше
+            считать длительность курса не в часах контента, а в неделях при этом парке техники,
+            и показывать её именно так: «этот курс — примерно 15 недель при вашем расписании».
+            Формула: <span class="mono">недель = (дети × часы) / (машины × часов_в_неделю)</span>.</div>
+</div>
+</details>
+</article>
+
+        <article class="f" data-sev="crit" data-role="curator">
+<details>
+<summary>
+<div class="fhead"><span class="sev crit">критично</span><span class="who">Куратор</span></div>
+<h3>Продукт требует до 2,5 часов в день, и они не заложены ни в чью нагрузку</h3>
+<span class="chev" aria-hidden="true"></span>
+</summary>
+<div class="fbody">
+<div class="where"><b>Где:</b> посадка ребёнка (найти, довести, ввести 12-символьный ключ,
+            дождаться, выйти) — около 4 минут на сеанс. Присутствие рядом всё время работы: общий
+            компьютер без присмотра не оставляют, а курсы с пометкой «практика только со взрослым»
+            требуют человека физически.</div>
+          <p>В «тонком» режиме, когда куратор только смотрит и напоминает, — 20–25 минут в день на
+            группу 12 и 40–50 на группу 25. В режиме, который продукту нужен, чтобы дети реально
+            занимались, — около двух с половиной часов. Взять их неоткуда: два свободных окна в дне
+            совпадают с окном, когда компьютер нужен детям. Время куратора и время детей конкурируют
+            за один и тот же промежуток и за одну и ту же машину.</p>
+          <div class="fix"><b>Что сделать:</b> убрать куратора из критического пути входа — короткий
+            PIN вместо ввода длинного ключа взрослым, цель ≤ 40 секунд без участия взрослого.
+            Печатная сводка «кого посадить сегодня», чтобы смена работала по бумаге, а не по экрану,
+            за который надо занимать очередь. И заложить в договор конкретное число закреплённых
+            часов в неделю: пока это ноль, продукт работает в режиме, ради которого роль не делали.</div>
+</div>
+</details>
+</article>
+
+        <article class="f" data-sev="crit" data-role="curator">
+<details>
+<summary>
+<div class="fhead"><span class="sev crit">критично</span><span class="who">Куратор</span></div>
+<h3>Сертификат — главную метрику проекта — взрослый производит за четыре минуты</h3>
+<span class="chev" aria-hidden="true"></span>
+</summary>
+<div class="fbody">
+<div class="where"><b>Где:</b> аттестация из 5 вопросов, проходной балл 3, после неудачи
+            показываются правильные ответы, пересдача сразу и тем же набором, прокторинга нет,
+            вход по ключу, который держит взрослый.</div>
+          <p>Первая попытка — три ошибки, правильные ответы выведены на экран. Вторая — пять из
+            пяти. Сертификат выдан, ребёнок в процессе не обязателен. Теперь совместите это
+            с тем, что учреждения сравниваются по доходимости: у человека, который держит все ключи,
+            появляются и мотив, и возможность произвести метрику. Не из злого умысла — просто
+            в конце квартала приезжает проверка, у нас два сертификата из двенадцати, а у соседей
+            девять, и есть двадцать минут и список ключей. Отличить это от настоящей работы
+            по логам нельзя.</p>
+          <div class="fix"><b>Что сделать:</b> пул вопросов существенно больше пяти со случайной
+            выборкой; после неудачи показывать не правильный ответ, а к какому уроку вернуться;
+            пауза перед пересдачей. И главное — обязательным условием сертификата делает не тест,
+            а практическую работу, которую принял человек <b>вне учреждения</b>.</div>
+</div>
+</details>
+</article>
+
+        <article class="f" data-sev="crit" data-role="curator">
+<details>
+<summary>
+<div class="fhead"><span class="sev crit">критично</span><span class="who">Куратор</span></div>
+<h3>Главная гипотеза проекта не инструментирована</h3>
+<span class="chev" aria-hidden="true"></span>
+</summary>
+<div class="fbody">
+<div class="where"><b>Где:</b> вся аналитика — про детей. Ни одной метрики по кураторам,
+            в данных ребёнка нет поля куратора, в журнале актор безымянный.</div>
+          <p>Проект объявляет куратора главным рычагом доходимости и делает роль обязательной. Через
+            год доходимость в учреждении — ноль из четырёх. Причина неизвестна: нет куратора, есть
+            и не заходит, заходит и ничего не делает (действий-то нет), или всё делает, но компьютер
+            сломан. Все четыре гипотезы дают одну строку в дашборде. Главная гипотеза проекта
+            оказывается непроверяемой — а единственная строка на экране, которая её касается, уже
+            написана как готовое оправдание задним числом.</p>
+          <div class="fix"><b>Что сделать:</b> три метрики роли рядом с детскими: доля детей группы
+            с входом за 14 дней; число отработанных меток «нужно внимание»; дата последнего входа
+            куратора. Плюс правило: нет входа 14 дней — координатору фонда падает задача связаться
+            с учреждением. Не претензия, а выяснение, что там с техникой и с человеком.</div>
+</div>
+</details>
+</article>
+
+        <article class="f" data-sev="crit" data-role="curator">
+<details>
+<summary>
+<div class="fhead"><span class="sev crit">критично</span><span class="who">Куратор</span></div>
+<h3>Куратор производит цифру, по которой сравнивают его учреждение</h3>
+<span class="chev" aria-hidden="true"></span>
+</summary>
+<div class="fbody">
+<div class="where"><b>Где:</b> таблица «по учреждениям» с колонкой доходимости и полосой
+            прогресса в каждой строке. Пометка: «сортировка по алфавиту, чтобы дашборд не
+            превращался в таблицу лидеров».</div>
+          <p>Алфавитная сортировка убирает удобство сравнения, но не убирает сравнение: четыре
+            строки с полосками в одном экране — это ранжирование при любом порядке, и свою строку
+            каждый находит за секунду. Дальше работает обычная логика отчётности, потому что
+            куратор аттестуется внутри учреждения, а фонд снаружи. Рациональные стратегии:
+            обеспечивать активность вместо результата (посадить на 10 минут закрывает две метрики
+            сразу); не заводить ключи тем, кто заведомо не дойдёт, — знаменатель под контролем
+            учреждения; и никогда не проставлять флаг «просил о встрече», который читается как
+            сигнал о неблагополучии внутри.</p>
+          <div class="fix"><b>Что сделать:</b> разделить дашборды физически, а не сортировкой.
+            Внешний — только агрегат по региону, без строк учреждений вообще. Внутренний экран
+            учреждения — только своя строка и своя динамика во времени. Критерий приёмки: в продукте
+            нет ни одного представления, где видны показатели двух учреждений одновременно.</div>
+</div>
+</details>
+</article>
+
+        <article class="f" data-sev="crit" data-role="curator">
+<details>
+<summary>
+<div class="fhead"><span class="sev crit">критично</span><span class="who">Куратор</span></div>
+<h3>Уведомлениям некуда приходить, и они уедут на личный телефон сотрудника</h3>
+<span class="chev" aria-hidden="true"></span>
+</summary>
+<div class="fbody">
+<div class="where"><b>Где:</b> §16 ТЗ: «Push / Email / SMS». Конфигурация: общий компьютер,
+            сессия стирается при выходе.</div>
+          <p>Push требует подписки браузера на личном устройстве — общий компьютер с очисткой при
+            выходе её не удержит, и следующий ребёнок получит уведомления предыдущего. Email у детей
+            чаще всего нет. SMS требует номера и денег. Все три канала сходятся к одному живому
+            приёмнику — личному телефону сотрудника. И тогда в личный номер уезжают данные о детях
+            под опекой: «Ребёнок В не заходил 19 дней», «Ребёнок Г просил о встрече». Периметр
+            персональных данных заканчивается на границе этого телефона, и решения об этом никто
+            не принимал.</p>
+          <div class="fix"><b>Что сделать:</b> признать, что при общем компьютере единственный
+            работающий канал для ребёнка — экран самой платформы при следующем входе: лента «что
+            было, пока тебя не было», включая несокрываемую строку «твой доступ восстанавливал
+            куратор такого-то числа». Для сотрудника — служебный канал или печатная сводка на смену.
+            Критерий: ни одно уведомление не содержит имени ребёнка вне контролируемого контура.</div>
+</div>
+</details>
+</article>
+
+        <article class="f" data-sev="warn" data-role="curator">
+<details>
+<summary>
+<div class="fhead"><span class="sev warn">важно</span><span class="who">Куратор</span></div>
+<h3>Перевод ребёнка в другое учреждение не предусмотрен ничем</h3>
+<span class="chev" aria-hidden="true"></span>
+</summary>
+<div class="fbody">
+<div class="where"><b>Где:</b> ключ жёстко привязан к учреждению, ребёнок тоже, действия
+            «перевести» нет ни в одной роли.</div>
+          <p>Для этой аудитории перевод — рутина, а не крайний случай. При нём рвётся сразу всё:
+            ключ, привязанный к старому учреждению; согласие, потому что при типе представителя
+            «организация-опекун» представитель буквально меняется; куратор; прогресс и сертификаты.
+            По умолчанию новое учреждение заводит новый аккаунт, ребёнок начинает с нуля — с той же
+            анкеты и тех же пятнадцати утверждений. А в аналитике он посчитан дважды: как выбывший
+            без сертификата и как новая регистрация. Доходимость падает арифметически, без единого
+            реального ухода.</p>
+          <div class="fix"><b>Что сделать:</b> действие «перевод» на уровне администратора: учётная
+            запись, прогресс и сертификаты сохраняются, меняются учреждение и куратор, оформляется
+            новое согласие, до его оформления доступ приостановлен, а не удалён. Плюс дедупликация
+            в аналитике.</div>
+</div>
+</details>
+</article>
+
+        <article class="f" data-sev="warn" data-role="curator">
+<details>
+<summary>
+<div class="fhead"><span class="sev warn">важно</span><span class="who">Куратор</span></div>
+<h3>Сменность и текучка приведут к общему логину на стикере</h3>
+<span class="chev" aria-hidden="true"></span>
+</summary>
+<div class="fbody">
+<div class="where"><b>Где:</b> куратор — одна безымянная роль, в журнале «куратор отправил
+            напоминание» без имени, привязки сотрудника к группе нет.</div>
+          <p>На группе работает не один взрослый, а смена: два-три воспитателя плюс ночная няня,
+            плюс подмены. Продукт выдаёт роль одному — дальше пароль пишется на стикере и клеится
+            к монитору. С этого момента журнал не атрибутирует ничего, матрица доступа перестаёт
+            разграничивать, а метрика «последний вход куратора» теряет смысл. Отпуска, увольнения
+            и передачи группы в продукте не смоделированы вовсе: новый воспитатель получает
+            двенадцать строк без истории.</p>
+          <div class="fix"><b>Что сделать:</b> куратор — не роль, а именной сотрудник с привязкой
+            к группе и датами; на группе двое и более одновременно; отзыв доступа при увольнении —
+            действие администратора с причиной в журнале; передача группы — экран с историей
+            действий предыдущего куратора по каждому ребёнку.</div>
+</div>
+</details>
+</article>
+      </div>
+    </div>
+
+    <div data-group>
+      <h3 style="margin-top:30px">Психолог-методолог: измеряем ли мы то, что заявляем</h3>
+      <p class="dim">Ядро продукта. Если оно не работает, всё остальное — оболочка.</p>
+      <div class="note red" style="margin-top:12px">
+        <h4>Короткий ответ: нет</h4>
+        <p>Продукт заявляет «выявление склонностей и сильных сторон», а измеряет степень согласия
+          подростка с пятнадцатью прозрачными утверждениями о том, что ему нравится. Между «мне
+          интересно» и «у меня к этому способность» нет автоматического перехода.</p>
+        <p><b>И главное — измерение смещено в известную сторону.</b> Три из пяти шкал требуют, чтобы
+          у ребёнка <b>уже был доступ</b> к предмету интереса: инструмент, камера, животные.
+          «Я скорее починю сам, чем отдам мастеру» — у него нет ни мастера, ни своих вещей.
+          Варианта «не пробовал» в шкале нет, поэтому всё это уходит в ноль. Пробелы опыта
+          распределены не случайно: их больше там, где учреждение ограничивает доступ. Значит
+          <b>тест систематически рекомендует то, к чему у ребёнка уже был доступ</b> — ровно
+          противоположное цели проекта.</p>
+      </div>
+      <div class="flist" style="margin-top:14px">
+
+        <article class="f" data-sev="crit" data-role="psy">
+<details>
+<summary>
+<div class="fhead"><span class="sev crit">критично</span><span class="who">Методолог</span></div>
+<h3>Из пяти конструктов §6 самоопросником корректно мерить один</h3>
+<span class="chev" aria-hidden="true"></span>
+</summary>
+<div class="fbody">
+<div class="where"><b>Где:</b> §6 ТЗ — «темперамент, стрессоустойчивость, коммуникация,
+            лидерские качества, профессиональные склонности».</div>
+          <p>Это пять конструктов из четырёх разных теоретических традиций, они не складываются
+            в один профиль. <b>Темперамент</b> у ребёнка с травматическим опытом опросник с большой
+            вероятностью подберёт как последствия пережитого и назовёт врождённой конституцией —
+            самый неснимаемый ярлык из возможных. <b>Стрессоустойчивость</b> — не конструкт,
+            а бытовое слово; измерение упрётся в симптоматику, то есть в данные о здоровье.
+            <b>Коммуникация</b> — навык, которому учат, и он уже есть в каталоге курсом.
+            <b>Лидерство</b> в условиях учреждения отразит положение ребёнка в неформальной иерархии,
+            и запись об этом будет иметь для него последствия внутри. Мерить самоотчётом вправе
+            только интересы.</p>
+          <div class="fix"><b>Что сделать:</b> сократить §6 до одного конструкта — «интересы к видам
+            занятий» — и записать явным списком, что мы <b>сознательно не измеряем</b>. Одна
+            страница «определение конструкта» защищает и от претензий, и от расползания продукта.
+            Реализация по факту уже так и сделана — надо привести ТЗ в соответствие с ней,
+            а не наоборот.</div>
+</div>
+</details>
+</article>
+
+        <article class="f" data-sev="crit" data-role="psy">
+<details>
+<summary>
+<div class="fhead"><span class="sev crit">критично</span><span class="who">Методолог</span></div>
+<h3>Разминка из трёх вопросов весит до 40% итогового профиля</h3>
+<span class="chev" aria-hidden="true"></span>
+</summary>
+<div class="fbody">
+<div class="where"><b>Где:</b> подсчёт складывает баллы Ликерта (максимум 9 на трек)
+            с ответами разминки (+2 за ответ, до 6).</div>
+          <p>Два несовместимых типа измерения сложены в одно число. Выбор одного из четырёх говорит
+            только о порядке предпочтений внутри человека; шкала из пятнадцати утверждений устроена
+            иначе. Складывать их — как сложить «занял второе место в забеге» с «пробежал 400 метров».
+            Плюс арифметика: разминка «меньше чем на минуту» способна перевернуть результат
+            серьёзного блока, и ребёнку об этом не сказано. А поскольку ему сначала выдали ярлык,
+            а потом он отвечал на пятнадцать вопросов, ярлык влияет дважды — через голову
+            и через сумму.</p>
+          <div class="fix"><b>Что сделать:</b> убрать баллы разминки из подсчёта — одна строка кода,
+            ноль потерь для продукта. Если ответы жалко, использовать их отдельно, как второй
+            независимый источник, и показывать расхождение: «в начале ты выбирал мастерскую,
+            а в вопросах больше про дизайн». Расхождение — самый ценный сигнал, который тут вообще
+            можно получить.</div>
+</div>
+</details>
+</article>
+
+        <article class="f" data-sev="crit" data-role="psy">
+<details>
+<summary>
+<div class="fhead"><span class="sev crit">критично</span><span class="who">Методолог</span></div>
+<h3>При ничьей молча побеждает «Работа с людьми» — и это худшая из рекомендаций</h3>
+<span class="chev" aria-hidden="true"></span>
+</summary>
+<div class="fbody">
+<div class="where"><b>Где:</b> функция определения ничьей написана и <b>нигде не
+            вызывается</b>. Профиль берёт первый элемент без условий, а при равенстве порядок
+            определяется порядком ключей в объекте.</div>
+          <p>Порядок ключей в исходном коде превращается в профориентационную рекомендацию. И достаётся
+            она самому уязвимому ребёнку: пункты трека «люди» единственные не требуют ресурсов,
+            поэтому у детей без опыта они системно выше; а склонность соглашаться со всем даёт
+            равные высокие баллы всем шкалам, то есть снова ничью. При этом у этого трека в каталоге
+            один уникальный курс, и тот про мягкие навыки — ни одного, ведущего к профессии.
+            Самый вероятный выход алгоритма оказывается самой бесполезной рекомендацией.</p>
+          <div class="fix"><b>Что сделать:</b> задействовать проверку ничьей на профиле и в подборе
+            курсов; ввести полосу неразличимости — при разрыве в два балла и меньше лидер
+            не называется, называется группа. Убрать тайбрейк по порядку ключей. И пересобрать трек
+            «Работа с людьми» так, чтобы у него было профессиональное содержание.</div>
+</div>
+</details>
+</article>
+
+        <article class="f" data-sev="crit" data-role="psy">
+<details>
+<summary>
+<div class="fhead"><span class="sev crit">критично</span><span class="who">Методолог</span></div>
+<h3>Полоски нормируются на максимум самого ребёнка: «пусто» выглядит как «ярко выражено»</h3>
+<span class="chev" aria-hidden="true"></span>
+</summary>
+<div class="fbody">
+<div class="where"><b>Где:</b> длина полосы считается относительно наибольшего результата
+            этого же ребёнка, а не относительно шкалы.</div>
+          <p>Следствие: у <b>любого</b> ребёнка верхняя полоса всегда заполнена на сто процентов.
+            Ребёнок, ответивший «точно про меня» на всё по технике, и ребёнок, ответивший «не про
+            меня» на всё, а по технике один раз ткнувший «иногда», увидят визуально одинаковый экран
+            под заголовком «Твои сильные стороны». Второму система только что сообщила о ярко
+            выраженной склонности, не имея для этого ни одного основания. Плюс третий трек попадает
+            в список, даже если у него ровно ноль баллов.</p>
+          <div class="fix"><b>Что сделать:</b> убрать полоски совсем — полоска это утверждение «вот
+            сколько у тебя», которого данные не выдерживают. Заменить списком без метрики. Трек
+            с нулём в списке не показывать.</div>
+</div>
+</details>
+</article>
+
+        <article class="f" data-sev="crit" data-role="psy">
+<details>
+<summary>
+<div class="fhead"><span class="sev crit">критично</span><span class="who">Методолог</span></div>
+<h3>Два пункта переводят последствия травмы в «профессиональную склонность»</h3>
+<span class="chev" aria-hidden="true"></span>
+</summary>
+<div class="fbody">
+<div class="where"><b>Где:</b> «Я замечаю, когда человеку рядом плохо» и «Мне легко начать
+            разговор с новым человеком» — оба идут в трек «Работа с людьми».</div>
+          <p>У этих ответов есть вторая причина, которую инструмент не отличает от первой. Первый
+            пункт может отражать обострённое отслеживание состояния взрослых — адаптацию к среде,
+            где от настроения взрослого зависело слишком многое. Второй — лёгкость вступления
+            в контакт с незнакомыми без обычной дистанции, паттерн, связанный именно с ранним
+            институциональным воспитанием. И тогда продукт <b>берёт признак уязвимости
+            и рекомендует ребёнку профессию, построенную на нём</b>. Это усиление риска,
+            а не профориентация.</p>
+          <div class="fix"><b>Что сделать:</b> убрать эти пункты из подсчёта. Интерес к работе
+            с людьми прекрасно измеряется через деятельность («мне нравится объяснять, пока
+            не поймёт»). Правило для автора пунктов: вопрос про интерес спрашивает о деятельности,
+            которую человек выбирает, а не о его реакции на других людей и не о внутренних
+            состояниях.</div>
+</div>
+</details>
+</article>
+
+        <article class="f" data-sev="crit" data-role="psy">
+<details>
+<summary>
+<div class="fhead"><span class="sev crit">критично</span><span class="who">Методолог</span></div>
+<h3>Ровный или сплошь низкий профиль не обработан — а это самый нуждающийся ребёнок</h3>
+<span class="chev" aria-hidden="true"></span>
+</summary>
+<div class="fbody">
+<div class="where"><b>Где:</b> лидер возвращается всегда, при любых ответах. Ветки
+            «результат неинформативен» в коде нет.</div>
+          <p>Ровный и низкий профиль — не сбой, а штатный результат, который в этой популяции будет
+            встречаться чаще, чем в школьной. И означать он может минимум пять разных вещей: ребёнок
+            ничего не пробовал; не доверяет ситуации; сниженное настроение; не понял вопросы;
+            осознанно не стал играть в эту игру. Третьему нужен живой человек, а не курс. Общее
+            у всех пяти одно: ни в одном случае правильный ответ не «вот твои сильные стороны, иди
+            на курс». Сегодня продукт выдаёт именно это.</p>
+          <div class="fix"><b>Что сделать:</b> при всех шкалах ниже порога профиль не выдаётся вовсе:
+            «по этим вопросам про тебя ничего не понятно — и это не про тебя, это про вопросы».
+            Дальше три коротких пробных задания из разных направлений. Принцип, проверяемый
+            перебором крайних случаев: <b>экран результата должен быть непроигрываемым</b> — не
+            должно существовать комбинации ответов, после которой ребёнок уходит с ухудшившимся
+            представлением о себе.</div>
+</div>
+</details>
+</article>
+
+        <article class="f" data-sev="warn" data-role="psy">
+<details>
+<summary>
+<div class="fhead"><span class="sev warn">важно</span><span class="who">Методолог</span></div>
+<h3>Самая дешёвая проверка, которую надо заложить сразу</h3>
+<span class="chev" aria-hidden="true"></span>
+</summary>
+<div class="fbody">
+<div class="where"><b>Где:</b> §7 ТЗ — рекомендательная система «на основе анкеты, тестов,
+            психологического профиля, интересов и прогресса».</div>
+          <p>Через полгода-год сравнить: предсказывает ли опросник доведённые до конца курсы лучше,
+            чем один прямой вопрос «что хочешь попробовать?». Если не лучше — <b>опросник
+            выбрасывается, остаётся прямой вопрос</b>. Проверка стоит почти ничего, использует
+            данные, которые платформа и так собирает, и единственная честно отвечает на вопрос,
+            нужен ли этот тест вообще.</p>
+          <div class="fix"><b>Что сделать:</b> заложить это в план до того, как в опросник вложатся
+            силы и самолюбие. И на горизонте года переключить систему с опросника на поведение:
+            лучший предсказатель того, что ребёнку подходит, — что он на самом деле доделал
+            до конца. Платформа умеет это наблюдать, в отличие от опросника.</div>
+</div>
+</details>
+</article>
+      </div>
+    </div>
+
+    <div data-group>
+      <h3 style="margin-top:30px">Директор учреждения и опека: гейткиперы</h3>
+      <p class="dim">Те, кто решает, пустить платформу к детям. Базовая установка — осторожность:
+        за детей отвечают они, инициатива внешняя.</p>
+      <div class="good" style="margin-top:12px">
+        <h4>Что снимает опасения — не трогать</h4>
+        <ul>
+          <li>Заблокированный ключ действительно не пускает — директор проверит это кликом при вас.</li>
+          <li>Реквизит «тип законного представителя»: признак того, что разговаривают люди, знающие
+            предметную область.</li>
+          <li>Сертификат не раскрывает статус. <b>Проговаривайте это вслух на встрече</b> — директор
+            оценит быстрее, чем всё остальное: выпускник может предъявить документ, не сообщая,
+            что он сирота.</li>
+          <li>Отказ от записи консультаций и намеренно закрытый чат. Для гейткипера отказ
+            от функции сильнее любых обещаний модерации.</li>
+        </ul>
+      </div>
+      <div class="flist" style="margin-top:14px">
+
+        <article class="f" data-sev="crit" data-role="dir">
+<details>
+<summary>
+<div class="fhead"><span class="sev crit">критично</span><span class="who">Директор</span></div>
+<h3>Директора нет в продукте — ни как роли, ни как адресата</h3>
+<span class="chev" aria-hidden="true"></span>
+</summary>
+<div class="fbody">
+<div class="where"><b>Где:</b> пять ролей, все принадлежат внешней организации либо
+            ребёнку. Учреждение — источник согласий, владелец класса и поставщик часов воспитателя.</div>
+          <p>Директор несёт персональную ответственность за детей и не имеет в системе ни одного
+            экрана. На встрече это ощущается как «нас обошли», и дальше разговор идёт не о пользе
+            для детей, а о защите периметра. Опека читает то же с другой стороны: у внешней
+            организации полный обзор по детям, у ответственного учреждения — никакого.</p>
+          <div class="fix"><b>Что сделать:</b> шестая роль «Учреждение» с экраном, дающим обзор
+            без доступа к содержанию: кто участвует и статус согласий; какие взрослые фонда допущены
+            к моим детям поимённо; лента переданных сигналов (дата, факт, кому, срок — без текста
+            обращения); что требуется от учреждения на неделе; и кнопка <b>«приостановить участие»</b>,
+            работающая в один клик без переговоров. Последнее важнее остального: возможность выйти
+            в любой момент снижает цену входа сильнее любых гарантий.</div>
+</div>
+</details>
+</article>
+
+        <article class="f" data-sev="crit" data-role="dir">
+<details>
+<summary>
+<div class="fhead"><span class="sev crit">критично</span><span class="who">Опека</span></div>
+<h3>«Кто эти взрослые» — вопрос не задан нигде</h3>
+<span class="chev" aria-hidden="true"></span>
+</summary>
+<div class="fbody">
+<div class="where"><b>Где:</b> во всех документах нет ни слова о проверке взрослых,
+            допущенных к детям. Партнёры: «колледж-партнёр, волонтёры», «мастера-волонтёры».</div>
+          <p>Это первый вопрос на первой встрече, и он будет задан именно так: кого вы приводите
+            к моим детям. Внешние психолог, преподаватели и волонтёры получают доступ к персональным
+            данным несовершеннолетних под опекой, к фотографиям их работ и к личным сообщениям. Без
+            ответа про справки об отсутствии судимости, подтверждение квалификации и регламент
+            допуска волонтёров разговор дальше не идёт — и не должен идти.</p>
+          <div class="fix"><b>Что сделать:</b> реестр допущенных лиц как объект продукта: роль,
+            документ о квалификации, дата проверки справки, срок допуска, к каким учреждениям
+            допущен. Просроченный допуск автоматически закрывает доступ к детским данным — <b>ровно
+            так же, как уже работает истёкшее согласие</b>. Эта симметрия дешёвая и очень
+            убедительная. Плюс правило: взрослый и ребёнок общаются только внутри платформы, попытка
+            передать номер или ссылку помечается автоматически.</div>
+</div>
+</details>
+</article>
+
+        <article class="f" data-sev="crit" data-role="dir">
+<details>
+<summary>
+<div class="fhead"><span class="sev crit">критично</span><span class="who">Опека</span></div>
+<h3>Сводный список детей-сирот из нескольких учреждений на одном экране</h3>
+<span class="chev" aria-hidden="true"></span>
+</summary>
+<div class="fbody">
+<div class="where"><b>Где:</b> экраны куратора и психолога выводят детей из трёх разных
+            учреждений одной таблицей — с возрастом, учреждением и ведущим направлением.</div>
+          <p>Директор откроет экран куратора и увидит, что сотрудник чужого учреждения смотрит
+            на его детей — встреча закончена. Опека увидит другое: сводный реестр детей под опекой
+            с психологическим профилем в одном месте у одного специалиста. Это ровно тот объект,
+            вокруг которого строится вся тревога по этой аудитории. Даже если в продукте видимость
+            будет ограничена, показывать демо в таком виде нельзя: впечатление создаётся за три
+            секунды и не переигрывается.</p>
+          <div class="fix"><b>Что сделать:</b> добавить в матрицу доступа второе измерение —
+            <b>область видимости</b>, а не только тип данных. Сейчас матрица отвечает «что видит»
+            и молчит про «чьих детей», а директора интересует именно это. Сводного списка по всем
+            учреждениям не существует ни у одной роли, кроме администратора, и его открытие пишется
+            в журнал отдельной записью.</div>
+</div>
+</details>
+</article>
+
+        <article class="f" data-sev="crit" data-role="dir">
+<details>
+<summary>
+<div class="fhead"><span class="sev crit">критично</span><span class="who">Директор</span></div>
+<h3>Практика с инструментом: условия не описаны, ответственность повисает на учреждении</h3>
+<span class="chev" aria-hidden="true"></span>
+</summary>
+<div class="fbody">
+<div class="where"><b>Где:</b> курсы с пометкой «практика только со взрослым», задание
+            с дюбелем и гипсокартоном. Курс «Электрика в быту: как не бояться щитка».</div>
+          <p>«Вместе со взрослым» — это ставка воспитателя, которой нет; инструмент и расходники —
+            статья, которой нет в смете учреждения; инструктаж по технике безопасности с подписью —
+            которого в продукте нет вовсе. При травме это ЧП с расследованием, и отвечает
+            учреждение, а не фонд. Отдельно название: «как не бояться щитка» в разговоре о подростках
+            из детского дома звучит как побуждение туда лезть, и одно это может закрыть встречу.</p>
+          <div class="fix"><b>Что сделать:</b> паспорт возможностей учреждения как объект системы
+            (мастерская, теплица, интернет, устройства, взрослые с допуском). Два класса курсов:
+            полностью онлайн и требующие оффлайн-условий; вторые не публикуются детям учреждения,
+            пока условия не подтверждены. Карточка требований к каждому такому курсу: что нужно,
+            <b>кто это обеспечивает прямым текстом</b>, форма инструктажа и порядок действий при
+            травме. На пилот курс про электрику — переименовать и сделать теоретическим либо снять.</div>
+</div>
+</details>
+</article>
+
+        <article class="f" data-sev="crit" data-role="dir">
+<details>
+<summary>
+<div class="fhead"><span class="sev crit">критично</span><span class="who">Директор</span></div>
+<h3>Сравнение учреждений: приведёт либо к отказу, либо к управлению цифрами</h3>
+<span class="chev" aria-hidden="true"></span>
+</summary>
+<div class="fbody">
+<div class="where"><b>Где:</b> таблица «по учреждениям» с колонкой доходимости
+            и полосой прогресса в каждой строке.</div>
+          <p>Директор задаст один вопрос: кто эту таблицу увидит. Если она хоть однажды окажется
+            у учредителя, она станет инструментом оценки директора по показателю, который зависит
+            от количества компьютеров, а не от его работы. Дальше два рациональных пути. Отказ —
+            вежливый и по другому поводу. Либо участие с управлением числами, и искажения
+            предсказуемы: <b>отбор в пилот только тех, кто дойдёт</b> (знаменатель под контролем
+            учреждения, а проект теряет ровно ту часть аудитории, ради которой существует);
+            помощь на аттестации; и самое разрушительное — <b>подгон профиля под возможности
+            учреждения</b>, чтобы тест не показал направление, которого учреждение не обеспечит.</p>
+          <div class="fix"><b>Что сделать:</b> три разные поверхности вместо одной таблицы. Плюс
+            <b>сменить показатели, по которым видно учреждение</b>: не доходимость детей, а то, что
+            учреждение реально контролирует — назначен ли куратор, сколько часов доступа к технике,
+            время реакции на сигнал, доля ключей с оформленным основанием. Это метрики о взрослых,
+            и они не создают стимула фильтровать детей. И строка в договор: данные по учреждению
+            не передаются учредителю в сравнительном виде.</div>
+</div>
+</details>
+</article>
+
+        <article class="f" data-sev="crit" data-role="dir">
+<details>
+<summary>
+<div class="fhead"><span class="sev crit">критично</span><span class="who">Опека</span></div>
+<h3>Фото и текст от ребёнка внешнему взрослому — без модерации и правил хранения</h3>
+<span class="chev" aria-hidden="true"></span>
+</summary>
+<div class="fbody">
+<div class="where"><b>Где:</b> «Сфотографируй результат и напиши, что было сложнее» →
+            карточка работы у преподавателя. Слова «модерация» и «пожаловаться» не встречаются
+            ни в одном документе.</div>
+          <p>Самый чувствительный канал во всём продукте. Проверяющий спросит по порядку: кто
+            модерирует фото до того, как его увидит взрослый; что если в кадр попали лицо ребёнка,
+            другой ребёнок или интерьер учреждения; где хранится, сколько, кто удалит; кто читает
+            ответный комментарий взрослого ребёнку; куда нажмёт ребёнок, если ему написали что-то
+            не то. Ответа сейчас нет ни на один.</p>
+          <div class="fix"><b>Что сделать:</b> правило «на фото работы — только работа»
+            с автоматической проверкой на лица и блокировкой отправки; срок хранения фото; кнопка
+            «пожаловаться» на каждом экране, где есть текст от взрослого, с маршрутом
+            к ответственному фонда, а не к автору сообщения; запрет внешних ссылок в материалах
+            курсов. Последнее проговорить директору отдельно: платформа не является окном
+            в открытый интернет мимо фильтрации учреждения. Он это спросит.</div>
+</div>
+</details>
+</article>
+
+        <article class="f" data-sev="crit" data-role="dir">
+<details>
+<summary>
+<div class="fhead"><span class="sev crit">критично</span><span class="who">Опека</span></div>
+<h3>Каталог не фильтрует курсы по возрасту — маркировка документирует нарушение</h3>
+<span class="chev" aria-hidden="true"></span>
+</summary>
+<div class="fbody">
+<div class="where"><b>Где:</b> карточки несут метки 12+, 14+, 16+, а каталог выводит все
+            курсы без единой проверки возраста.</div>
+          <p>Маркировка есть, механизма нет — худший вариант из возможных, потому что метка в таком
+            виде фиксирует нарушение письменно. Тринадцатилетний открывает курс 16+ про электрощиток
+            в один клик.</p>
+          <div class="fix"><b>Что сделать:</b> возраст берётся из записи ключа, курсы выше планки
+            не отображаются вовсе — не серым, их видимость сама по себе создаёт вопрос. И к метке
+            добавить атрибуцию: кто присвоил, на основании чего, дата. Проверяющий спросит
+            не про наличие метки, а про основание.</div>
+</div>
+</details>
+</article>
+
+        <article class="f" data-sev="warn" data-role="dir">
+<details>
+<summary>
+<div class="fhead"><span class="sev warn">важно</span><span class="who">Директор</span></div>
+<h3>Расписание платформы не согласовано с режимом учреждения</h3>
+<span class="chev" aria-hidden="true"></span>
+</summary>
+<div class="fbody">
+<div class="where"><b>Где:</b> «Занятие с преподавателем — завтра 16:00», «Дедлайн через
+            2 дня», плюс уведомления из §16.</div>
+          <p>Учреждение живёт по режиму: уроки, кружки, прогулка, тихий час, отбой. Внешняя платформа
+            назначает встречи и дедлайны, не спрашивая расписания. Именно на этом ломается
+            ежедневная работа, и именно из-за этого через месяц воспитатели начинают саботировать
+            проект.</p>
+          <div class="fix"><b>Что сделать:</b> окна доступности задаются учреждением и являются
+            жёстким ограничением при назначении любых встреч; уведомления вне окон не приходят;
+            дедлайны сдвигаются по режиму, а не по календарю.</div>
+</div>
+</details>
+</article>
+
+        <article class="f" data-sev="warn" data-role="dir">
+<details>
+<summary>
+<div class="fhead"><span class="sev warn">важно</span><span class="who">Директор</span></div>
+<h3>Устойчивость проекта не заявлена нигде</h3>
+<span class="chev" aria-hidden="true"></span>
+</summary>
+<div class="fbody">
+<div class="where"><b>Где:</b> ни в одном документе нет ответа на вопрос, сколько лет
+            проект будет жить.</div>
+          <p>Директор видел проекты, которые приходили, увлекали детей и исчезали. Для ребёнка
+            из детского дома это не нейтральное событие — это ещё один взрослый, который пообещал
+            и пропал, а последствия достаются учреждению. Он спросит об этом обязательно,
+            и «мы надеемся, что всё продлится» — плохой ответ.</p>
+          <div class="fix"><b>Что сделать:</b> в договоре — минимальный гарантированный срок работы,
+            порядок предупреждения о закрытии не менее чем за месяц-два и обязательство передать
+            детям их сертификаты и материалы при закрытии. На встрече назвать срок, на который
+            проект обеспечен точно, честно и без округления вверх.</div>
+</div>
+</details>
+</article>
+      </div>
+      <div class="note red" style="margin-top:14px">
+        <h4>Что убьёт проект на втором месяце пилота</h4>
+        <p><b>1. Первый сигнал о неблагополучии, ушедший не туда.</b> Ребёнок написал, сигнал попал
+          в учреждение, ребёнок получил последствия — либо не получил ничего, и это стало известно.
+          Проект закрывается здесь и не открывается в соседних учреждениях: система маленькая,
+          и слухи в ней быстрее любых презентаций. Единственный пункт, где ошибка необратима.</p>
+        <p><b>2. Инцидент на практическом задании</b> без оформленного инструктажа. <b>3. Куратор
+          перестал быть куратором</b> — ставки нет, часы не выделены; это самая тихая и самая частая
+          смерть таких проектов. <b>4. Директор увидел себя в сравнительной таблице.</b>
+          <b>5. Фотография ребёнка или название учреждения во внешнем материале</b> без отдельного
+          согласия — один пост, и договорённость аннулируется.</p>
+      </div>
+    </div>
+
+    <div data-group>
+      <h3 style="margin-top:30px">Выпускник 19 лет: ретроспектива</h3>
+      <p class="dim">Он уже прошёл всё то, ради чего строится платформа. Помогло бы это на самом деле.</p>
+      <div class="flist" style="margin-top:14px">
+
+        <article class="f" data-sev="crit" data-role="grad">
+<details>
+<summary>
+<div class="fhead"><span class="sev crit">критично</span><span class="who">Выпускник</span></div>
+<h3>Весь путь происходит там, где человек принимает меньше всего решений</h3>
+<span class="chev" aria-hidden="true"></span>
+</summary>
+<div class="fbody">
+<div class="where"><b>Где:</b> лендинг сам называет момент 18-летия сутью проблемы —
+            «а в восемнадцать он выходит за ворота, и с этого дня решает всё сам» — и следующим
+            блоком идут десять шагов, последний из которых «Сертификат».</div>
+          <p>Продукт заканчивается за секунду до момента, который сам же назвал главным. Год,
+            в котором я получил бы этот сертификат, — это год, когда сертификат был бы наименее
+            значимым предметом из того, что у меня есть. При этом метрика «доля дошедших
+            до сертификата» достижима полностью, не изменив ни одного реального исхода: она может
+            расти три года подряд, пока проект не делает того, что написано в §1, и все внутри
+            при этом будут добросовестны.</p>
+          <div class="fix"><b>Что сделать:</b> достроить путь двумя шагами, существующими как экраны,
+            а не как декларация: <b>«Подготовка к выходу»</b> (стартует за 12 месяцев до 18-летия,
+            триггер — дата рождения) и <b>«Первый год»</b> (аккаунт продолжает работать). Проверяемый
+            критерий: в дорожной карте, в демо и в таблице метрик есть хотя бы один экран и хотя бы
+            одно измерение, датированные <b>после</b> 18-летия. Сейчас — ноль во всех трёх.</div>
+</div>
+</details>
+</article>
+
+        <article class="f" data-sev="crit" data-role="grad">
+<details>
+<summary>
+<div class="fhead"><span class="sev crit">критично</span><span class="who">Выпускник</span></div>
+<h3>В день 18-летия аккаунт становится невосстановимым</h3>
+<span class="chev" aria-hidden="true"></span>
+</summary>
+<div class="fbody">
+<div class="where"><b>Где:</b> ключ привязан к учреждению, восстановление — через куратора,
+            своей почты может не быть.</div>
+          <p>Ломаются три вещи одновременно, и путь восстановления ломается тем же событием.
+            Происходит это с человеком, у которого именно в этот месяц меньше всего ресурса что-то
+            восстанавливать бюрократическим усилием: он переезжает, оформляет документы и заново
+            выясняет, где ночует. Вместе с аккаунтом теряются сертификаты, история и запись о том,
+            кто вообще был его куратором.</p>
+          <div class="fix"><b>Что сделать:</b> сценарий «Мой выход» стартует не позднее 17 лет:
+            заводится собственная почта (как пункт курса, а не настройка), настраивается способ
+            восстановления, не зависящий от учреждения. Взрослый аккаунт — не новый, а <b>тот же
+            самый с новым основанием</b>: собственное согласие подписывается заранее и вступает
+            в силу с даты 18-летия. Судьбу психологического профиля решает сам выпускник, и выбор
+            предлагается до 18, а не после.</div>
+</div>
+</details>
+</article>
+
+        <article class="f" data-sev="crit" data-role="grad">
+<details>
+<summary>
+<div class="fhead"><span class="sev crit">критично</span><span class="who">Выпускник</span></div>
+<h3>В первый год важнее человек, которому можно позвонить, — а связи не переживают выпуск</h3>
+<span class="chev" aria-hidden="true"></span>
+</summary>
+<div class="fbody">
+<div class="where"><b>Где:</b> усиление «карьерные треки с реальными работодателями» стоит
+            последней строкой с пометкой «по желанию, этап 3» — ниже видеосвязи, ИИ-рекомендаций
+            и мобильного приложения.</div>
+          <p>В первый год вопрос почти никогда не звучит как «как это делается». Он звучит как «кому
+            позвонить, чтобы за меня это не сделали неправильно». Навык догоняется за месяц; человек,
+            который берёт трубку, не догоняется никак. Продукт строит ровно одну такую связь —
+            куратора — правильно делает её обязательной и обрывает ровно в точке выпуска.
+            Приоритеты расставлены наоборот.</p>
+          <div class="fix"><b>Что сделать:</b> наставник как роль, отдельная от куратора учреждения:
+            человек не из учреждения, остающийся тем же контактом после 18, знакомство — до выпуска.
+            Экран «кому позвонить» с честными часами. И <b>инициатива со стороны продукта</b>:
+            «пиши, если что» не работает — чтобы написать, надо признать, что не справился, перед
+            тем самым взрослым, который в тебя верил. Работает контакт по расписанию, когда повод
+            для звонка есть у него, а не у тебя.</div>
+</div>
+</details>
+</article>
+
+        <article class="f" data-sev="crit" data-role="grad">
+<details>
+<summary>
+<div class="fhead"><span class="sev crit">критично</span><span class="who">Выпускник</span></div>
+<h3>Курс «Взрослая жизнь» — карточка в каталоге, а не продукт</h3>
+<span class="chev" aria-hidden="true"></span>
+</summary>
+<div class="fbody">
+<div class="where"><b>Где:</b> курс отнесён к треку «работа с людьми», 12 часов,
+            10 уроков, «от юристов фонда», с аттестацией в конце.</div>
+          <p>Он встроен в систему склонностей, то есть человеку с треком «техника» достаётся как
+            приятное дополнение. Это не дополнение — это единственный курс, относящийся к тому, что
+            случится наверняка. И по формату это школьное обществознание: оно не работает не потому,
+            что плохо написано, а потому что знание нужно через два года, в конкретном здании,
+            в конкретной очереди, и к тому моменту остаётся ощущение «что-то такое было».</p>
+          <div class="fix"><b>Что сделать:</b> не курс, а <b>личное дело со сроками</b>. Единица
+            содержания — не урок, а действие с результатом на руках: есть СНИЛС; есть свой счёт;
+            копии документов лежат в двух местах; я знаю свой номер в списке на жильё и когда его
+            проверять; я один раз сам подал одно заявление. Пункт закрывается фактом, а не правильным
+            вариантом из трёх. Плюс тренажёр разговора вместо теста: как отказать, когда просят
+            паспорт «на пару дней». И отдельная ось каталога, стартующая по календарю,
+            а не по рекомендации.</div>
+</div>
+</details>
+</article>
+
+        <article class="f" data-sev="crit" data-role="grad">
+<details>
+<summary>
+<div class="fhead"><span class="sev crit">критично</span><span class="who">Выпускник</span></div>
+<h3>Сертификат не имеет веса там, куда выпускник придёт</h3>
+<span class="chev" aria-hidden="true"></span>
+</summary>
+<div class="fbody">
+<div class="where"><b>Где:</b> вся воронка построена так, чтобы закончиться этим объектом,
+            и измеримый исход проекта сформулирован через него.</div>
+          <p>Мест, куда выпускник реально приходит, три: приёмная комиссия колледжа (смотрит
+            аттестат), отдел кадров (смотрит паспорт, СНИЛС, ИНН, для части профессий медкнижку
+            и допуск) и мастер на объекте (проверяет руками за пятнадцать минут). PDF с QR-кодом
+            от неизвестного фонда не меняет решение ни в одной из трёх точек. Он меняет одно —
+            самооценку, и это не ноль, но это не то, что записано в цели.</p>
+          <div class="fix"><b>Что сделать:</b> <b>портфолио работ вместо документа о прохождении</b> —
+            актив уже есть, фотографии выполненных заданий лежат у преподавателя; собрать их
+            в страницу «что я делал руками», не раскрывающую статус. Плюс рекомендация с именем
+            и телефоном живого человека, согласного, что ему позвонят. Плюс зачёт у партнёра: если
+            курс даёт колледж, задача — договориться, что он же его засчитывает. И проверка
+            до запуска: три разговора — приёмная комиссия, кадровик, мастер — с одним вопросом
+            «что вы сделаете, если увидите этот PDF». Если трижды «ничего», метрику проекта надо
+            переписать.</div>
+</div>
+</details>
+</article>
+
+        <article class="f" data-sev="warn" data-role="grad">
+<details>
+<summary>
+<div class="fhead"><span class="sev warn">важно</span><span class="who">Выпускник</span></div>
+<h3>Уязвимость к «помогающим» схемам названа для базы данных и не названа для человека</h3>
+<span class="chev" aria-hidden="true"></span>
+</summary>
+<div class="fbody">
+<div class="where"><b>Где:</b> единственное упоминание темы — в юридическом разделе,
+            и оно целиком про защиту базы от утечки.</div>
+          <p>Базу защищать надо, но атака идёт не на базу. Она идёт на человека, после 18, и почти
+            всегда от того, кто представляется помогающим: «поживи пока у меня, оформим позже»,
+            «дай карту на пару дней». Работает это не из-за наивности, а из-за комбинации: денег
+            много и сразу, опыта решений мало, и нет взрослого, с которым можно сверить историю.
+            Предыдущие восемнадцать лет учили ровно тому, что бумаги подписывают другие люди.
+            И обучение «распознавать мошенников» по признаку «звонит незнакомец» бьёт мимо, потому
+            что предлагает обычно знакомый и симпатичный человек.</p>
+          <div class="fix"><b>Что сделать:</b> правило одного звонка вместо списка запретов: «прежде
+            чем подписать что-либо про жильё, деньги или регистрацию — позвони по этому номеру».
+            Одно запоминается, десять нет — и под него должен реально существовать телефон. Плюс
+            справка, доступная <b>без входа в аккаунт</b>: один экран за двадцать секунд с чужого
+            телефона, потому что в нужный момент доступа к своему может не быть. И жёсткая граница:
+            никакого скоринга и флагов «в зоне риска» после 18 — человек, за которым наблюдают,
+            перестаёт сообщать о проблемах, а сообщение и есть единственное, что здесь спасает.</div>
+</div>
+</details>
+</article>
+
+        <article class="f" data-sev="warn" data-role="grad">
+<details>
+<summary>
+<div class="fhead"><span class="sev warn">важно</span><span class="who">Выпускник</span></div>
+<h3>Дата рождения есть в системе и не работает ни на что</h3>
+<span class="chev" aria-hidden="true"></span>
+</summary>
+<div class="fbody">
+<div class="where"><b>Где:</b> в списке куратора семнадцатилетний выглядит так же, как
+            тринадцатилетний: «прогресс 41%, напомнить».</div>
+          <p>Самая важная переменная этого продукта — сколько месяцев осталось. Тринадцатилетнему
+            и семнадцати-с-половиной нужен разный продукт, а они получают одну воронку. Для
+            семнадцатилетнего правильная карточка у куратора — не «напомнить про курс»,
+            а «выпуск через четыре месяца, из списка выхода закрыто 3 пункта из 12».</p>
+          <div class="fix"><b>Что сделать:</b> обратный отсчёт как первичный признак. Куратор
+            сортирует список по дате выхода, а не по прогрессу. За 12 месяцев до 18 главный экран
+            ребёнка меняется с «твой курс» на «твой выход».</div>
+</div>
+</details>
+</article>
+      </div>
+      <div class="note amb" style="margin-top:14px">
+        <h4>Что вы, скорее всего, недооцениваете</h4>
+        <p><b>18 лет — не переход, а одновременная смена всего.</b> Взрослые представляют это как
+          выпускной; по ощущению это ближе к переезду в другую страну: жильё, окружение, режим,
+          деньги, все контакты и все правила меняются в один день.</p>
+        <p><b>Главная трудность — не незнание, а отсутствие права на ошибку.</b> Ошибку сверстника
+          из семьи страхуют родители. Здесь первая ошибка с жильём или кредитом не страхуется ничем,
+          и человек это знает. Отсюда паралич, который взрослые читают как лень. Формулировка
+          «не понравится — поменяешь, это нормально» внутри платформы правильная; после 18 она
+          перестаёт быть правдой, и об этом честнее сказать.</p>
+        <p><b>Стыд — главный барьер обращения за помощью.</b> Человек не позвонит, чтобы не выглядеть
+          провалившимся перед тем, кто в него верил. Канал связи должен работать без необходимости
+          признаться в провале, чтобы им воспользоваться.</p>
+      </div>
+    </div>
+
+    <div data-group>
+      <h3 style="margin-top:30px">Сторонний наблюдатель: чем проект пока не подтверждён</h3>
+      <p class="dim">Смотрит не на качество проработки, а на то, сработает ли это на реальных детях
+        и чем это уже доказано.</p>
+      <div class="good" style="margin-top:12px">
+        <h4>Что убеждает — не трогать</h4>
+        <ul>
+          <li>Раздел «Чего мы пока не знаем» на презентационной странице. Шесть открытых вопросов,
+            вынесенных наружу, — этого не делает почти никто.</li>
+          <li>Осознанный отказ от статистики. Обычно такой документ открывается непроверяемой цифрой
+            из пересказа; здесь её нет намеренно, и это признак добросовестности сильнее любой цифры.</li>
+          <li>Уровень постановки юридических вопросов. Команда, которая так ставит вопросы, скорее
+            всего вовремя признает, если гипотеза не подтвердилась.</li>
+        </ul>
+      </div>
+      <div class="flist" style="margin-top:14px">
+
+        <article class="f" data-sev="crit" data-role="donor">
+<details>
+<summary>
+<div class="fhead"><span class="sev crit">критично</span><span class="who">Наблюдатель</span></div>
+<h3>Партнёрские курсы поданы как существующие, хотя партнёров ноль</h3>
+<span class="chev" aria-hidden="true"></span>
+</summary>
+<div class="fbody">
+<div class="where"><b>Где:</b> «Курсы партнёрские: колледжи, онлайн-школы,
+            мастера-волонтёры» — настоящее время. И тут же служебный блок: «партнёры, которые
+            <b>подтвердили готовность</b>» — строку ещё предстоит заполнить.</div>
+          <p>Это сломано сейчас, а не риск. Читатель понимает настоящее время как факт, а потом
+            обнаруживает, что подтверждённых партнёров нет. Одно такое расхождение обесценивает весь
+            раздел «честные границы»: если про партнёров сказано авансом, дальше начинают
+            перепроверять и всё остальное. А ведь именно содержание курсов — то, чего у проекта
+            сейчас нет вовсе: ни одного подтверждённого источника.</p>
+          <div class="fix"><b>Что сделать:</b> получить <b>два письма о намерениях</b> — от одного
+            колледжа и одной онлайн-школы. Не договор, письмо. Делается за две недели и укрепляет
+            позицию сильнее, чем ещё десять экранов. До тех пор писать «партнёр не определён».</div>
+</div>
+</details>
+</article>
+
+        <article class="f" data-sev="crit" data-role="donor">
+<details>
+<summary>
+<div class="fhead"><span class="sev crit">критично</span><span class="who">Наблюдатель</span></div>
+<h3>Ни одного подтверждённого учреждения — риск «платформа есть, детей нет»</h3>
+<span class="chev" aria-hidden="true"></span>
+</summary>
+<div class="fbody">
+<div class="where"><b>Где:</b> служебный блок: «с какими учреждениями уже есть
+            договорённости» — строка пустая.</div>
+          <p>Это главный риск проекта, и он не закрыт ничем. Чтобы дети реально пользовались, должно
+            совпасть пять вещей, и четыре из них вне продукта: директор разрешил; внутри есть
+            человек, для которого это часть работы; есть физический доступ к технике и времени;
+            кто-то пришёл и запустил первую группу лично. Проработано только пятое — мотив ребёнка.
+            И отдельная развилка, которую проект не проходил: <b>что делать, если директор
+            потребует показать ему результаты тестов своих детей</b>. По инварианту — нет.
+            По жизни — это может стоить доступа к учреждению.</p>
+          <div class="fix"><b>Что сделать:</b> <b>одно подписанное соглашение с одним учреждением.</b>
+            Не десять — одно. В нём: кто конкретно куратор, сколько часов в неделю, доступ к технике,
+            кто подписывает согласия и как стороны поступают при конфликте вокруг доступа
+            к результатам. Такой документ меняет статус проекта с «идея с интерфейсом» на «пилот,
+            готовый к старту» — самое сильное, что можно сделать за две недели.</div>
+</div>
+</details>
+</article>
+
+        <article class="f" data-sev="crit" data-role="donor">
+<details>
+<summary>
+<div class="fhead"><span class="sev crit">критично</span><span class="who">Наблюдатель</span></div>
+<h3>Метрики измеряют платформу, а не судьбу ребёнка, и не с чем сравнить</h3>
+<span class="chev" aria-hidden="true"></span>
+</summary>
+<div class="fbody">
+<div class="where"><b>Где:</b> §15 ТЗ и три добавленные метрики — все про то, что
+            происходит внутри платформы.</div>
+          <p>«Дошли до сертификата 27%» — много или мало? Относительно кого? Вопрос, на который
+            придётся отвечать: а если бы вы просто дали тем же детям куратора и любой готовый
+            онлайн-курс, было бы 20% или 40%? Без ответа непонятно, работает ли платформа
+            или работает куратор.</p>
+          <div class="fix"><b>Что сделать:</b> три уровня метрик. <b>Выход</b> (собирает платформа):
+            активировано ключей, дошло до профиля, выдано сертификатов. <b>Результат за время
+            пилота</b> (собирает куратор руками, поштучно): сколько детей сформулировали конкретный
+            следующий шаг — не «хочу в колледж», а «подаю в такой-то на такую-то специальность»;
+            сколько прошли офлайн-пробу; у скольких появился регулярный контакт со взрослым вне
+            учреждения. <b>Исход через 12 месяцев</b>: поступил, учится, работает, на связи. Плюс
+            хоть какая-то группа сравнения — дети тех же учреждений, не получившие ключ в первый год.
+            И простой объективный источник по поступлениям: <b>списки зачисленных в партнёрском
+            колледже публичны</b> — не требует ни опроса, ни хранения новых данных.</div>
+</div>
+</details>
+</article>
+
+        <article class="f" data-sev="warn" data-role="donor">
+<details>
+<summary>
+<div class="fhead"><span class="sev warn">важно</span><span class="who">Наблюдатель</span></div>
+<h3>В §19 стоит платёжная система — на платформе, где все пользователи дети под опекой</h3>
+<span class="chev" aria-hidden="true"></span>
+</summary>
+<div class="fbody">
+<div class="where"><b>Где:</b> §19 ТЗ, в перечне интеграций: «платёжная система
+            (на будущее)».</div>
+          <p>Строка ни к чему не привязана и, судя по всему, попала в документ по шаблону — но
+            в этом продукте она опасна. Все три прочтения нерабочие. Оплата детьми — недопустима.
+            Платный доступ для сторонних — прямой конфликт с §4 «система закрытого типа,
+            невозможность регистрации без ключа». Сбор пожертвований — тогда это кнопка на сайте
+            фонда, к платформе отношения не имеющая. Отдельно: выпускники интернатных учреждений —
+            целевая аудитория финансового мошенничества, и любой денежный интерфейс внутри
+            доверенного сервиса приучает ребёнка к тому, что здесь бывают операции с деньгами.</p>
+          <div class="fix"><b>Что сделать:</b> вычеркнуть строку и заменить продуктовым
+            ограничением, записанным в требования: <b>денежные операции с участием ребёнка
+            невозможны by design</b> — ни ввода реквизитов, ни ссылок на оплату, ни поля для суммы.
+            Это же проговорить директору и опеке: они спросят.</div>
+</div>
+</details>
+</article>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="s5">
+  <div class="stack prose">
+    <div class="snum">05</div>
+    <h2>Как переосмыслить ТЗ, не споря с ним</h2>
+    <p class="lede">Формулировки ТЗ настолько общие, что почти всё нужное в них уже помещается.
+      Это не недостаток, а рычаг: можно менять продукт, не объявляя ТЗ ошибочным и не заставляя
+      автора защищаться. Ниже — что где написано, как это прочитать и что из этого следует.</p>
+  </div>
+  <div class="tw" style="margin-top:18px">
+    <table>
+      <thead><tr><th>Пункт ТЗ</th><th>Читаем так</th><th>Что делаем</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><b>§4</b> «Логин/пароль, восстановление доступа»</td>
+          <td>ТЗ <b>уже требует пароль</b> отдельно от ключа</td>
+          <td>Ключ одноразовый, тратится при активации; дальше ребёнок задаёт свой PIN. Это
+            не отступление от ТЗ, а его исполнение — сегодняшний «ключ вместо пароля»
+            как раз отступление</td>
+        </tr>
+        <tr>
+          <td><b>§3</b> «Куратор (опционально)»</td>
+          <td>Опционально для учреждения, обязательно для результата</td>
+          <td>В пилот входит только учреждение, выделившее куратора с закреплёнными часами.
+            Формально §3 не нарушен</td>
+        </tr>
+        <tr>
+          <td><b>§6</b> темперамент, стрессоустойчивость, лидерство</td>
+          <td>Там же сказано «<b>без постановки диагнозов</b>» — это и есть ограничение</td>
+          <td>Меряем один конструкт: интересы к видам занятий. Списком фиксируем, чего
+            сознательно не измеряем</td>
+        </tr>
+        <tr>
+          <td><b>§5</b> «адаптивная логика вопросов»</td>
+          <td>Ветвление убирает неприменимые блоки</td>
+          <td>Фиксированное ядро всем и всегда; ветвление не выбирает пункты внутри шкалы —
+            иначе результаты детей лежат на разных шкалах и нормы не накопятся никогда</td>
+        </tr>
+        <tr>
+          <td><b>§8</b> семь форматов контента сразу</td>
+          <td>«Текстовых материалов» уже стоит в перечне</td>
+          <td>Текст по умолчанию плюс короткое видео. Вебинары и прямые эфиры — прямо записать
+            как вне объёма первого года</td>
+        </tr>
+        <tr>
+          <td><b>§16</b> Push / Email / SMS</td>
+          <td>ТЗ не говорит, <b>кому</b> они приходят</td>
+          <td>Ребёнку — экран платформы при следующем входе. Сотруднику — служебный канал.
+            Ни одно уведомление с именем ребёнка не уходит на личный телефон</td>
+        </tr>
+        <tr>
+          <td><b>§15</b> «статистика по регионам»</td>
+          <td>По регионам, а не по учреждениям</td>
+          <td>Внешний отчёт агрегируется по региону. Сравнение учреждений не существует
+            ни на одном экране</td>
+        </tr>
+        <tr>
+          <td><b>§19</b> «Интеграции: LMS/CRM»</td>
+          <td>ТЗ <b>само разрешает</b> внешнюю LMS</td>
+          <td>Не строим свою. Строим модуль доступа, согласий и сопровождения поверх готовой</td>
+        </tr>
+        <tr>
+          <td><b>§19</b> «платёжная система (на будущее)»</td>
+          <td>Шаблонный след, к проекту не относящийся</td>
+          <td>Вычеркнуть. Заменить ограничением: денежные операции с участием ребёнка
+            невозможны by design</td>
+        </tr>
+        <tr>
+          <td><b>§20</b> «AI-рекомендации», этап 3</td>
+          <td>Улучшение алгоритма подбора</td>
+          <td>Прозрачная таблица правил. Модель не на чем обучать: размеченного исхода нет,
+            пока ни один ребёнок не прошёл ни одного курса</td>
+        </tr>
+        <tr>
+          <td><b>§1</b> «сильные и <b>слабые</b> стороны»</td>
+          <td>Противоречит §6 «без диагнозов»</td>
+          <td>«Сильные стороны и зоны роста». Нижние позиции рейтинга ребёнку не показываем</td>
+        </tr>
+        <tr>
+          <td><b>§2</b> шаг 10 «мониторинг прогресса»</td>
+          <td>Название шага, а не его содержание</td>
+          <td>«Что у меня есть»: работы, рекомендации, контакты, сертификаты. Экран должен
+            оставаться осмысленным через год после последней активности</td>
+        </tr>
+        <tr>
+          <td><b>§23</b> «прописать user flow, wireframes, юридические требования и метрики»</td>
+          <td>Документ сам признаёт, чего в нём нет</td>
+          <td>Перестать называть его ТЗ. Это бриф. Подрядчику отдавать бриф + собранный
+            интерфейс + список вопросов</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+
+<section id="s6">
+  <div class="stack prose">
+    <div class="snum">06</div>
+    <h2>Что решать дальше</h2>
+    <p class="lede">Порядок здесь важнее содержания: почти всё сильное в этом списке делается
+      без единой строки кода, а разработка без этого не имеет смысла.</p>
+
+    <h3 style="margin-top:8px">За две недели и без разработки — и это меняет статус проекта</h3>
+    <ol class="num">
+      <li><b>Одно подписанное соглашение с одним учреждением.</b>
+        <span>Не десять — одно. С именем куратора, числом часов, доступом к технике и порядком
+          на случай конфликта вокруг доступа к результатам. Меняет статус с «идея с интерфейсом»
+          на «пилот, готовый к старту».</span></li>
+      <li><b>Два письма о намерениях от партнёров по контенту.</b>
+        <span>Колледж и онлайн-школа. Не договор, письмо. Содержание курсов — то, чего у проекта
+          сейчас нет вовсе: ни одного подтверждённого источника.</span></li>
+      <li><b>Регламент эскалации на одной странице.</b>
+        <span>Где сигнал о насилии в учреждении идёт <b>не в учреждение</b>, и это написано прямыми
+          словами. Плюс телефон доверия на экранах ребёнка — одна строка кода, а решает больше,
+          чем весь остальной раздел.</span></li>
+      <li><b>Юрист по 152-ФЗ.</b>
+        <span>До данных первого ребёнка, включая пилот на пятерых. Единственное, что нельзя обойти
+          продуктовым решением.</span></li>
+      <li><b>Три метрики результата с целевыми значениями, названными до старта.</b>
+        <span>Иначе любой итог будет объявлен успехом.</span></li>
+    </ol>
+
+    <h3 style="margin-top:14px">Развилки, которые придётся пройти лично</h3>
+    <ol class="num">
+      <li><b>Директор требует показать результаты тестов своих детей.</b>
+        <span>По инварианту — отказ. По жизни это может стоить доступа к учреждению. Ответ надо
+          выбрать заранее и произнести вслух, а не в момент разговора.</span></li>
+      <li><b>Строим LMS или надстраиваемся над готовой.</b>
+        <span>Проверяемое действие: взять две-три готовые и выписать, что из уникального списка
+          в них невозможно без доработки. Одно-два — строим модуль. Пять из шести — строим своё,
+          и это обосновано. Сейчас нет ни того, ни другого ответа.</span></li>
+      <li><b>Профориентация или подготовка к выходу — что главный продукт.</b>
+        <span>Дешёвый тест: два курса, одна группа, смотрим, что дети берут охотнее. Если
+          побеждает второе, позиционирование меняется — и становится защитимее: там нет вопроса
+          о лицензиях на методики и почти нет вопроса о валидности.</span></li>
+      <li><b>Что считается провалом и на каком месяце останавливаемся.</b>
+        <span>Самый диагностичный вопрос из всех. Команда, у которой есть критерий остановки,
+          работает иначе.</span></li>
+    </ol>
+
+    <h3 style="margin-top:14px">Что можно подтюнить прямо сейчас, ничего не ломая</h3>
+    <p>Всё перечисленное не противоречит ТЗ и не требует новых решений: убрать баллы разминки
+      из подсчёта профиля (одна строка); задействовать уже написанную проверку ничьей; добавить
+      вариант ответа «не пробовал» и не считать его нулём; убрать полоски из детского экрана;
+      снять балл с бланка сертификата; убрать колонку «ведущее направление» из списка психолога;
+      поставить дату и срок годности на профиль; добавить кнопку «мне надо поговорить» на каждый
+      экран ребёнка; убрать дедлайны и обнуляемые серии из интерфейса ребёнка; переписать первые
+      три вопроса в прошедшее время; заменить задание с дюбелем на то, что делается пустыми руками.</p>
+    <p class="dim" style="margin-top:10px">Каждый пункт занимает от пяти минут до часа. Вместе они
+      снимают больше половины критичных находок этого документа — потому что тексты в продукте уже
+      честнее алгоритма, и подтягивать надо алгоритм до текстов, а не наоборот.</p>
+  </div>
+</section>
+
+  </main>
+</div>
+
+<footer>
+  <div class="wrap">«Навигатор» — разбор продукта. Уровни критичности расставлены по худшему
+    последствию, а не по трудоёмкости исправления.</div>
+</footer>
+
+<script>
+document.documentElement.lang = "ru";
+
+// Содержание строится из заголовков секций
+(function(){
+  var list = document.getElementById("tocList");
+  document.querySelectorAll("main section").forEach(function(s){
+    var h = s.querySelector("h1,h2"); if(!h) return;
+    var li = document.createElement("li");
+    var a = document.createElement("a");
+    a.href = "#" + s.id; a.textContent = h.textContent; a.dataset.for = s.id;
+    li.appendChild(a); list.appendChild(li);
+  });
+  if(!("IntersectionObserver" in window)) return;
+  var links = list.querySelectorAll("a");
+  var io = new IntersectionObserver(function(es){
+    es.forEach(function(e){
+      if(!e.isIntersecting) return;
+      links.forEach(function(l){ l.classList.toggle("cur", l.dataset.for === e.target.id); });
+    });
+  }, {rootMargin:"-15% 0px -70% 0px"});
+  document.querySelectorAll("main section").forEach(function(s){ io.observe(s); });
+})();
+
+// Фильтр по критичности
+(function(){
+  var active = new Set();
+  var count = document.getElementById("count");
+
+  function apply(){
+    var all = document.querySelectorAll(".f");
+    var shown = 0;
+    all.forEach(function(f){
+      var vis = active.size === 0 || active.has(f.dataset.sev);
+      f.hidden = !vis;
+      if(vis) shown++;
+    });
+    // пустые группы прячем вместе с их заголовком
+    document.querySelectorAll("[data-group]").forEach(function(g){
+      var any = g.querySelectorAll(".f:not([hidden])").length;
+      g.hidden = any === 0;
+    });
+    count.textContent = active.size === 0
+      ? "находок: " + all.length
+      : "показано " + shown + " из " + all.length;
+  }
+
+  document.getElementById("filters").addEventListener("click", function(e){
+    var b = e.target.closest("button"); if(!b) return;
+    if(b.dataset.reset){
+      active.clear();
+      document.querySelectorAll("#filters .fbtn[data-sev]").forEach(function(x){
+        x.setAttribute("aria-pressed","false");
+      });
+      return apply();
+    }
+    var s = b.dataset.sev;
+    if(active.has(s)){ active.delete(s); b.setAttribute("aria-pressed","false"); }
+    else { active.add(s); b.setAttribute("aria-pressed","true"); }
+    apply();
+  });
+
+  window.__applyFilter = apply;
+  apply();
+})();
+
+// Развернуть / свернуть все находки
+(function(){
+  var btn = document.getElementById("expandAll");
+  btn.addEventListener("click", function(){
+    var open = btn.getAttribute("aria-pressed") !== "true";
+    document.querySelectorAll(".f details").forEach(function(d){ d.open = open; });
+    btn.setAttribute("aria-pressed", open ? "true" : "false");
+    btn.textContent = open ? "свернуть всё" : "развернуть всё";
+  });
+})();
+
+// Открытая находка не должна оставаться скрытой фильтром
+document.addEventListener("toggle", function(e){
+  if(e.target.matches(".f details") && e.target.open){
+    var a = e.target.closest(".f");
+    if(a && a.hidden) e.target.open = false;
+  }
+}, true);
+</script>
