@@ -1,477 +1,1603 @@
-<!doctype html>
-<html lang="ru">
-<head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Навигатор — Твоя учёба</title>
+<title>Навигатор</title>
 <style>
-:root {
-  --bg: #F5F7FA;
-  --card: #FFFFFF;
-  --ink: #1E293B;
-  --ink-muted: #64748B;
-  --accent: #2563EB;
-  --accent-soft: #EFF6FF;
-  --accent-dark: #1D4ED8;
-  --good: #10B981;
-  --good-soft: #ECFDF5;
-  --warn: #F59E0B;
-  --warn-soft: #FFFBEB;
-  --crit: #EF4444;
-  --crit-soft: #FEF2F2;
-  --line: #E2E8F0;
-  --radius: 16px;
-  --shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
-  --shadow-lg: 0 10px 25px -5px rgba(15, 23, 42, 0.08);
+:root{
+  color-scheme:light dark;
+  --ground:#EEF2F4; --surface:#FFFFFF; --surface-2:#F6F9FA; --sunk:#E4EAEE;
+  --line:#D4DDE2; --line-soft:#E5ECEF;
+  --ink:#101A20; --ink-2:#3F515B; --ink-3:#5B6E77;
+  --accent:#4C5FD7; --accent-2:#6B7BE8; --accent-soft:#E6E9FB; --accent-ink:#39479F;
+  --amber:#8A5A12; --amber-soft:#F6EAD5;
+  --good:#1F7A52; --good-soft:#DEF2E6;
+  --warn:#8F5D10; --warn-soft:#F6EBD6;
+  --crit:#9A3126; --crit-soft:#F6DFDB;
+  --hero-a:#4C5FD7; --hero-b:#2B3690; --hero-ink:#F7F8FF; --hero-ink-2:#D2D8FA; --hero-eyebrow:#E9ECFD;
+  --btn-ink:#FFFFFF;
+  --shadow:0 1px 2px rgba(16,26,32,.05), 0 10px 28px -16px rgba(16,26,32,.28);
+  --shadow-lift:0 2px 4px rgba(16,26,32,.06), 0 18px 40px -20px rgba(16,26,32,.35);
+  --r:10px; --r-lg:16px;
+  --font-display:Georgia,'Iowan Old Style','Times New Roman',serif;
+  --font-body:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+  --font-mono:ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,monospace;
 }
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0F172A;
-    --card: #1E293B;
-    --ink: #F8FAFC;
-    --ink-muted: #94A3B8;
-    --accent: #3B82F6;
-    --accent-soft: #1E3A8A;
-    --accent-dark: #60A5FA;
-    --line: #334155;
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#0D1317; --surface:#151E23; --surface-2:#1A252B; --sunk:#101A1F;
+    --line:#2A383F; --line-soft:#212F36;
+    --ink:#E3EAEE; --ink-2:#A6B9C2; --ink-3:#7C919D;
+    --accent:#9AA6F5; --accent-2:#B4BDF9; --accent-soft:#262E60; --accent-ink:#C6CCFB;
+    --amber:#D9A45E; --amber-soft:#34280F;
+    --good:#5FC494; --good-soft:#163227;
+    --warn:#CE9E52; --warn-soft:#332711;
+    --crit:#DF8073; --crit-soft:#371C18;
+    --hero-a:#3B49B8; --hero-b:#1D2568; --hero-ink:#F7F8FF; --hero-ink-2:#D2D8FA; --hero-eyebrow:#E9ECFD;
+    --btn-ink:#141A45;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 28px -16px rgba(0,0,0,.7);
+    --shadow-lift:0 2px 4px rgba(0,0,0,.45), 0 18px 40px -20px rgba(0,0,0,.8);
   }
 }
-* { box-sizing: border-box; }
-body {
-  margin: 0; background: var(--bg); color: var(--ink);
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  font-size: 16px; line-height: 1.5;
-  min-height: 100vh; display: flex; flex-direction: column;
-}
-.header {
-  background: var(--card); border-bottom: 1px solid var(--line);
-  padding: 14px 20px; display: flex; align-items: center; justify-content: space-between;
-  position: sticky; top: 0; z-index: 20;
-}
-.logo { font-size: 20px; font-weight: 800; color: var(--accent); display: flex; align-items: center; gap: 8px; text-decoration: none; }
-.logo span { font-size: 13px; font-weight: 600; background: var(--accent-soft); color: var(--accent); padding: 2px 8px; border-radius: 999px; }
-.user-info { display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 600; }
-.btn-logout {
-  background: transparent; border: 1px solid var(--line); border-radius: 8px;
-  padding: 6px 12px; font-size: 13px; color: var(--ink-muted); cursor: pointer;
-}
-.container { width: 100%; max-width: 840px; margin: 0 auto; padding: 24px 16px; flex: 1; }
-.card {
-  background: var(--card); border-radius: var(--radius); border: 1px solid var(--line);
-  padding: 24px; box-shadow: var(--shadow); margin-bottom: 20px;
-}
-.badge {
-  display: inline-flex; align-items: center; gap: 4px;
-  font-size: 12.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
-  padding: 4px 10px; border-radius: 999px;
-}
-.badge.accent { background: var(--accent-soft); color: var(--accent); }
-.badge.good { background: var(--good-soft); color: var(--good); }
-.badge.warn { background: var(--warn-soft); color: var(--warn); }
-.badge.crit { background: var(--crit-soft); color: var(--crit); }
-h1 { font-size: 24px; font-weight: 800; margin: 10px 0 6px; line-height: 1.25; }
-h2 { font-size: 19px; font-weight: 700; margin: 0 0 12px; }
-p { margin: 0 0 12px; }
-.muted { color: var(--ink-muted); font-size: 15px; }
-
-/* Кнопки */
-.btn {
-  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-  background: var(--accent); color: #FFF; font-weight: 700; font-size: 16px;
-  padding: 12px 24px; border-radius: 12px; border: 0; cursor: pointer; text-decoration: none;
-  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25); transition: background .15s;
-}
-.btn:hover { background: var(--accent-dark); }
-.btn.ghost {
-  background: var(--accent-soft); color: var(--accent); box-shadow: none;
-}
-.btn.crit { background: var(--crit); color: #FFF; box-shadow: 0 2px 6px rgba(239, 68, 68, 0.25); }
-
-/* Плеер */
-.video-wrap {
-  position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;
-  border-radius: var(--radius); background: #000; box-shadow: var(--shadow-lg);
-  margin: 16px 0;
-}
-.video-wrap iframe {
-  position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;
+:root[data-theme="dark"]{
+  --ground:#0D1317; --surface:#151E23; --surface-2:#1A252B; --sunk:#101A1F;
+  --line:#2A383F; --line-soft:#212F36;
+  --ink:#E3EAEE; --ink-2:#A6B9C2; --ink-3:#7C919D;
+  --accent:#9AA6F5; --accent-2:#B4BDF9; --accent-soft:#262E60; --accent-ink:#C6CCFB;
+  --amber:#D9A45E; --amber-soft:#34280F;
+  --good:#5FC494; --good-soft:#163227;
+  --warn:#CE9E52; --warn-soft:#332711;
+  --crit:#DF8073; --crit-soft:#371C18;
+  --hero-a:#3B49B8; --hero-b:#1D2568; --hero-ink:#F7F8FF; --hero-ink-2:#D2D8FA; --hero-eyebrow:#E9ECFD;
+  --btn-ink:#141A45;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 28px -16px rgba(0,0,0,.7);
+  --shadow-lift:0 2px 4px rgba(0,0,0,.45), 0 18px 40px -20px rgba(0,0,0,.8);
 }
 
-/* Переключалка режимов видео / текст */
-.tabs-switch {
-  display: inline-flex; background: var(--bg); border: 1px solid var(--line);
-  padding: 4px; border-radius: 999px; margin-bottom: 16px;
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:var(--font-body); font-size:15px; line-height:1.55;
+  -webkit-font-smoothing:antialiased;
 }
-.tabs-switch button {
-  background: transparent; border: 0; padding: 8px 18px; border-radius: 999px;
-  font-size: 14.5px; font-weight: 600; color: var(--ink-muted); cursor: pointer;
-}
-.tabs-switch button.active {
-  background: var(--card); color: var(--accent); box-shadow: var(--shadow);
+h1,h2,h3{font-family:var(--font-display); font-weight:600; text-wrap:balance; margin:0; letter-spacing:-.01em}
+h1{font-size:clamp(22px,3.2vw,30px); line-height:1.2}
+h2{font-size:19px; line-height:1.3}
+h3{font-size:16px; line-height:1.35}
+p{margin:0}
+button{font:inherit; color:inherit}
+:focus-visible{outline:2px solid var(--accent-2); outline-offset:2px; border-radius:4px}
+@media (prefers-reduced-motion:reduce){*{animation:none !important; transition:none !important}}
+
+.eyebrow{
+  font-family:var(--font-mono); font-size:10.5px; letter-spacing:.13em;
+  text-transform:uppercase; color:var(--ink-3);
 }
 
-/* Тренажер и выбор вариантов */
-.choice-btn {
-  width: 100%; text-align: left; padding: 14px 18px; margin-bottom: 10px;
-  background: var(--bg); border: 2px solid var(--line); border-radius: 12px;
-  font-size: 15.5px; font-weight: 600; color: var(--ink); cursor: pointer;
-  display: flex; align-items: center; gap: 12px; transition: border-color .15s;
+/* ---------- demo shell ---------- */
+.appbar{
+  position:sticky; top:0; z-index:40; background:var(--surface);
+  border-bottom:1px solid var(--line);
+  display:flex; align-items:center; gap:12px; padding:10px 20px;
 }
-.choice-btn:hover { border-color: var(--accent); }
-.choice-btn.selected { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
-.choice-btn.good { border-color: var(--good); background: var(--good-soft); color: var(--good); }
-.choice-btn.bad { border-color: var(--crit); background: var(--crit-soft); color: var(--crit); }
+.who{display:flex; align-items:center; gap:12px; margin-left:auto}
+.who[hidden]{display:none}   /* display:flex иначе перебивает атрибут hidden */
+.appbar #themeBtn{margin-left:auto}
+.who ~ #themeBtn{margin-left:0}
+.whoname{font-weight:600; font-size:14px}
+.whorole{
+  font-family:var(--font-mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--accent); background:var(--accent-soft); padding:3px 9px; border-radius:100px;
+}
+.shell.norail{grid-template-columns:minmax(0,1fr)}
+.shell.norail .rail{display:none}
+/* Экран входа — единственный, где нет рельса: центрируем по обеим осям */
+.shell.norail .canvas{
+  max-width:none; width:100%; min-height:calc(100vh - 57px);
+  display:flex; align-items:center; justify-content:center;
+  padding:40px 20px 60px;
+}
+.shell.norail .canvas > *{width:100%}
+.demoacc{box-shadow:none; background:var(--surface-2)}
+.demoacc summary{cursor:pointer; font-size:13px; color:var(--ink-3); list-style:none}
+.demoacc summary::-webkit-details-marker{display:none}
+.demoacc summary::before{content:"▸ "}
+.demoacc[open] summary::before{content:"▾ "}
+.acclist{margin:6px 0 0; padding-left:18px; font-size:13.5px; color:var(--ink-2)}
+.acclist li{margin-bottom:3px}
+.brand{display:flex; align-items:baseline; gap:9px}
+.brand b{font-family:var(--font-display); font-size:17px; font-weight:600; letter-spacing:-.01em}
+.brand .tag{
+  font-family:var(--font-mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--accent); background:var(--accent-soft); padding:2px 7px; border-radius:100px;
+}
+.roles{display:flex; gap:2px; background:var(--sunk); padding:3px; border-radius:100px;
+  flex-wrap:nowrap; overflow-x:auto; max-width:100%; scrollbar-width:none}
+.roles::-webkit-scrollbar{display:none}
+.roles button{white-space:nowrap}
+.roles button{
+  border:0; background:transparent; padding:5px 13px; border-radius:100px;
+  font-size:13px; color:var(--ink-2); cursor:pointer; transition:background .15s,color .15s;
+}
+.roles button:hover{color:var(--ink)}
+.roles button[aria-pressed="true"]{background:var(--surface); color:var(--accent); box-shadow:var(--shadow); font-weight:600}
+.toolbtn{
+  border:1px solid var(--line); background:var(--surface); color:var(--ink-2);
+  padding:5px 11px; border-radius:100px; font-size:12px; cursor:pointer; white-space:nowrap;
+  display:inline-flex; align-items:center; gap:7px; transition:border-color .15s,color .15s;
+}
+.toolbtn:hover{border-color:var(--accent); color:var(--accent)}
+.toolbtn[aria-pressed="true"]{background:var(--amber-soft); border-color:var(--amber); color:var(--amber); font-weight:600}
 
-/* Тревожная кнопка взрослого */
-.help-bar {
-  position: sticky; bottom: 0; background: var(--card); border-top: 1px solid var(--line);
-  padding: 12px 20px; display: flex; align-items: center; justify-content: space-between;
-  box-shadow: 0 -4px 12px rgba(0,0,0,0.05); z-index: 10;
-}
-.help-bar .phones { font-size: 13.5px; color: var(--ink-muted); }
-.help-bar .phones a { color: var(--ink); font-weight: 700; text-decoration: none; }
 
-/* Модалка помощи */
-.modal-overlay {
-  position: fixed; inset: 0; background: rgba(15,23,42,0.6); backdrop-filter: blur(2px);
-  display: grid; place-items: center; z-index: 50; padding: 16px;
+.shell{display:grid; grid-template-columns:264px minmax(0,1fr); gap:0; align-items:start}
+.rail{
+  position:sticky; top:57px; align-self:start; padding:22px 16px 40px; min-width:0;
+  border-right:1px solid var(--line); min-height:calc(100vh - 57px);
 }
-.modal-overlay[hidden] { display: none; }
-.modal-box {
-  background: var(--card); border-radius: var(--radius); width: 100%; max-width: 500px;
-  padding: 24px; box-shadow: var(--shadow-lg); border: 1px solid var(--line);
+.rail h4{margin:0 0 10px 4px; font:inherit}
+.railgroup + .railgroup{margin-top:22px}
+.steps{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:1px; min-width:0}
+.steps button{
+  width:100%; text-align:left; border:0; background:transparent; cursor:pointer;
+  display:flex; align-items:center; gap:10px; padding:7px 9px; border-radius:8px;
+  font-size:13.5px; color:var(--ink-2); transition:background .12s,color .12s;
+}
+.steps button:hover{background:var(--surface); color:var(--ink)}
+.steps button[aria-current="true"]{background:var(--accent-soft); color:var(--accent-ink); font-weight:600}
+.num{
+  flex:0 0 20px; height:20px; border-radius:100px; display:grid; place-items:center;
+  font-family:var(--font-mono); font-size:10.5px; background:var(--sunk); color:var(--ink-2);
+}
+.steps button[aria-current="true"] .num{background:var(--accent); color:var(--btn-ink)}
+.num.done{background:var(--good-soft); color:var(--good)}
+.dot{flex:0 0 20px; display:grid; place-items:center; color:var(--ink-3); font-size:11px}
+
+.canvas{padding:26px 30px 80px; max-width:1000px}
+@media (max-width:860px){
+  .shell{grid-template-columns:minmax(0,1fr)}
+  .rail{position:static; min-height:0; border-right:0; border-bottom:1px solid var(--line); padding:14px 16px}
+  .steps{flex-direction:row; overflow-x:auto; gap:6px; padding-bottom:4px; scrollbar-width:thin}
+  .steps button{white-space:nowrap; width:auto}
+  .canvas{padding:20px 16px 60px}
+}
+
+/* ---------- primitives ---------- */
+.card{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--shadow)}
+.pad{padding:22px 24px}
+.stack{display:flex; flex-direction:column; gap:18px}
+.stack-sm{display:flex; flex-direction:column; gap:10px}
+.row{display:flex; gap:12px; align-items:center; flex-wrap:wrap}
+.grid2{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px}
+.grid3{display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:14px}
+.muted{color:var(--ink-2)}
+.dim{color:var(--ink-3); font-size:13px}
+.hr{height:1px; background:var(--line-soft); border:0; margin:0}
+
+.btn{
+  border:0; background:var(--accent); color:var(--btn-ink); padding:10px 18px; border-radius:var(--r);
+  font-size:14px; font-weight:600; cursor:pointer; transition:transform .1s, filter .15s;
+}
+.btn:hover{filter:brightness(1.1)}
+.btn:active{transform:translateY(1px)}
+.btn.ghost{background:transparent; color:var(--accent); border:1px solid var(--line)}
+.btn.ghost:hover{border-color:var(--accent)}
+.btn:disabled{opacity:.45; cursor:not-allowed; filter:none}
+.btn.ghost{color:var(--accent)}
+
+.pill{
+  display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:100px;
+  font-size:11.5px; font-weight:600; background:var(--sunk); color:var(--ink-2); white-space:nowrap;
+}
+.pill.acc{background:var(--accent-soft); color:var(--accent-ink)}
+.pill.good{background:var(--good-soft); color:var(--good)}
+.pill.warn{background:var(--warn-soft); color:var(--warn)}
+.pill.crit{background:var(--crit-soft); color:var(--crit)}
+.pill.amb{background:var(--amber-soft); color:var(--amber)}
+
+input[type="text"],input[type="password"],select,textarea{
+  width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:var(--r);
+  background:var(--surface-2); color:var(--ink); font:inherit;
+}
+input::placeholder,textarea::placeholder{color:var(--ink-3)}
+label.field{display:flex; flex-direction:column; gap:5px; font-size:13px; color:var(--ink-2)}
+
+.bar{height:6px; background:var(--sunk); border-radius:100px; overflow:hidden}
+.bar i{display:block; height:100%; background:var(--accent); border-radius:100px; transition:width .35s ease}
+.bar.amb i{background:var(--amber)}
+
+table{width:100%; border-collapse:collapse; font-size:13.5px}
+th{
+  text-align:left; font-family:var(--font-mono); font-size:10.5px; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--ink-3); font-weight:500; padding:0 12px 8px; border-bottom:1px solid var(--line);
+}
+td{padding:11px 12px; border-bottom:1px solid var(--line-soft); vertical-align:middle}
+tr:last-child td{border-bottom:0}
+.tnum{font-variant-numeric:tabular-nums; font-family:var(--font-mono); font-size:12.5px}
+.scroller{overflow-x:auto}
+
+.choice{
+  display:flex; gap:11px; align-items:flex-start; padding:12px 14px; border:1px solid var(--line);
+  border-radius:var(--r); background:var(--surface-2); cursor:pointer; transition:border-color .12s,background .12s;
+}
+.choice:hover{border-color:var(--accent-2)}
+.choice[aria-pressed="true"]{border-color:var(--accent); background:var(--accent-soft)}
+.choice .mark{
+  flex:0 0 18px; height:18px; margin-top:1px; border-radius:100px; border:1.5px solid var(--line);
+  display:grid; place-items:center; background:var(--surface);
+}
+.choice[aria-pressed="true"] .mark{border-color:var(--accent); background:var(--accent)}
+.choice[aria-pressed="true"] .mark::after{content:''; width:7px; height:7px; border-radius:100px; background:var(--surface)}
+.choice span{text-align:left}
+
+.likert{display:flex; gap:6px; flex-wrap:wrap}
+.likert button{
+  border:1px solid var(--line); background:var(--surface-2); border-radius:100px;
+  padding:6px 14px; font-size:12.5px; cursor:pointer; color:var(--ink-2); transition:all .12s;
+}
+.likert button:hover{border-color:var(--accent-2); color:var(--ink)}
+.likert button[aria-pressed="true"]{background:var(--accent); border-color:var(--accent); color:var(--btn-ink); font-weight:600}
+
+/* design notes */
+.note{display:none}
+body.notes-on .note{
+  display:flex; gap:9px; align-items:flex-start;
+  background:var(--amber-soft); border-left:3px solid var(--amber);
+  border-radius:0 var(--r) var(--r) 0; padding:9px 13px; font-size:12.5px; color:var(--amber);
+}
+body.notes-on .note b{font-weight:700; white-space:nowrap; flex:0 0 auto}
+
+/* ---- возрастной регистр 12–14 ----
+   Крупнее набор, больше воздуха, крупнее цели нажатия. Не «детский» вид:
+   подросток 13 лет закроет всё, что выглядит как для малышей. */
+.agesw{display:inline-flex; border:1px solid var(--line); border-radius:100px; overflow:hidden}
+.agesw .toolbtn{border:0; border-radius:0; padding:5px 11px}
+.agesw .toolbtn + .toolbtn{border-left:1px solid var(--line)}
+.agesw .toolbtn[aria-pressed="true"]{background:var(--accent); color:var(--btn-ink)}
+body.young{font-size:17.5px; line-height:1.68}
+body.young h1{font-size:clamp(30px,4.4vw,44px)}
+body.young h2{font-size:clamp(22px,2.8vw,29px)}
+body.young h3{font-size:19px}
+body.young .btn{padding:15px 24px; font-size:16.5px}
+body.young .choice, body.young .likert button{padding:16px 18px; font-size:16.5px}
+body.young .stack{gap:20px}
+body.young .card{padding:24px 26px}
+body.young .muted, body.young .card p{font-size:16px}
+body.young .dim{font-size:14.5px}
+
+.hero{
+  background:linear-gradient(160deg,var(--hero-a) 0%,var(--hero-b) 100%);
+  color:var(--hero-ink-2); border-radius:var(--r-lg); padding:26px 28px; box-shadow:var(--shadow-lift);
+}
+.hero h1{color:var(--hero-ink)}
+.hero .eyebrow{color:var(--hero-eyebrow)}
+.hero p{color:var(--hero-ink-2)}
+
+.tile{background:var(--surface); border:1px solid var(--line); border-radius:var(--r); padding:16px}
+.tile .k{font-family:var(--font-mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3)}
+.tile .v{font-family:var(--font-display); font-size:26px; font-variant-numeric:tabular-nums; margin-top:4px}
+
+.cert{
+  border:2px solid var(--accent); border-radius:var(--r-lg); padding:30px 32px;
+  background:var(--surface); box-shadow:var(--shadow-lift); position:relative; overflow:hidden;
+}
+.cert::before{
+  content:''; position:absolute; inset:8px; border:1px solid var(--accent-soft); border-radius:10px; pointer-events:none;
+}
+.cert .name{font-family:var(--font-display); font-size:28px; margin:14px 0 6px}
+
+.lessonbody{font-size:15px; line-height:1.7; color:var(--ink-2)}
+.lessonbody p + p{margin-top:12px}
+.videobox{
+  aspect-ratio:16/9; background:var(--sunk); border-radius:var(--r); display:grid; place-items:center;
+  color:var(--ink-3); text-align:center; border:1px dashed var(--line); gap:6px; padding:20px;
+}
+.seg{display:inline-flex; background:var(--sunk); border-radius:100px; padding:3px}
+.seg button{border:0; background:transparent; padding:5px 14px; border-radius:100px; font-size:12.5px; cursor:pointer; color:var(--ink-2)}
+.seg button[aria-pressed="true"]{background:var(--surface); color:var(--accent); font-weight:600; box-shadow:var(--shadow)}
+
+.locked{
+  background:var(--crit-soft); border:1px dashed var(--crit); color:var(--crit);
+  border-radius:var(--r); padding:12px 14px; font-size:13px;
 }
 </style>
-</head>
-<body>
 
-<header class="header">
-  <a class="logo" href="#">
-    🧭 Навигатор <span>для ученика</span>
-  </a>
-  <div class="user-info" id="userBox">
-    <span id="userNameDisplay">Артём · 17 лет</span>
-    <button class="btn-logout" id="logoutBtn">Сменить код</button>
+<header class="appbar">
+  <div class="brand"><b>Навигатор</b><span class="tag">демо</span></div>
+  <div class="who" id="who" hidden>
+    <span class="whoname" id="whoName"></span>
+    <span class="whorole" id="whoRole"></span>
+    <button class="toolbtn" data-act="logout">Выйти</button>
   </div>
+  <button class="toolbtn" id="themeBtn">Тёмная тема</button>
 </header>
 
-<main class="container" id="mainApp">
-  <!-- Рендерится через JS: вход или урок -->
-</main>
-
-<div class="help-bar">
-  <div class="phones">
-    Если тяжело или опасно: <a href="tel:88002000122">8-800-2000-122</a> (телефон доверия) · <a href="tel:112">112</a>
-  </div>
-  <button class="btn crit" id="askAdultBtn" style="padding:10px 18px; font-size:14.5px;">
-    🚨 Позвать взрослого / Помощь
-  </button>
+<div class="shell">
+  <aside class="rail" id="rail"></aside>
+  <main class="canvas" id="canvas"></main>
 </div>
-
-<!-- Модальное окно зова о помощи -->
-<div class="modal-overlay" id="helpModal" hidden>
-  <div class="modal-box">
-    <h2>Что случилось?</h2>
-    <p class="muted">Твоё сообщение сразу увидит дежурный психолог и воспитатель. Они свяжутся с тобой в учреждении.</p>
-    <div style="margin: 16px 0;">
-      <button class="choice-btn" data-reason="scam">
-        ⚠️ Мне предлагают подозрительный заработок или просят карту
-      </button>
-      <button class="choice-btn" data-reason="anxiety">
-        😔 Мне тревожно перед выпуском, хочу поговорить с психологом
-      </button>
-      <button class="choice-btn" data-reason="lesson">
-        ❓ Не понимаю задание в уроке
-      </button>
-    </div>
-    <textarea id="helpComment" rows="3" placeholder="Можно написать своими словами..." style="width:100%; border:1px solid var(--line); border-radius:10px; padding:10px; font-family:inherit; font-size:14px; margin-bottom:14px; background:var(--bg); color:var(--ink);"></textarea>
-    <div style="display:flex; gap:10px; justify-content:flex-end;">
-      <button class="btn ghost" id="helpCancelBtn">Отмена</button>
-      <button class="btn crit" id="helpSendBtn">Отправить сигнал</button>
-    </div>
-  </div>
-</div>
-
-<footer style="text-align:center; padding:16px; font-size:13px; color:var(--ink-muted);">
-  <span>Навигатор · Образовательная программа для самостоятельной жизни</span> · 
-  <a href="staff.html" style="color:var(--ink-muted); text-decoration:none; opacity:0.7;">Вход для сотрудников →</a>
-</footer>
 
 <script>
-// Простое хранилище
-const STORE_KEY = "navigator_child_state";
-let S = {
-  isLogged: true,
-  name: "Артём",
-  age: 17,
-  mode: "video", // "video" или "text"
-  videoUrl: "https://rutube.ru/play/embed/f88a988f0c9edeb963bb68baa9c50698/",
-  scenarioAnswer: null,
-  testAnswers: {},
-  testSubmitted: false,
-  testScore: 0
-};
+"use strict";
 
-try {
-  const saved = localStorage.getItem(STORE_KEY);
-  if (saved) S = Object.assign(S, JSON.parse(saved));
-} catch(e) {}
-
-function save() {
-  try { localStorage.setItem(STORE_KEY, JSON.stringify(S)); } catch(e) {}
-}
-
-const TEST_QUESTIONS = [
-  {
-    q: "Знакомый в телеграме предлагает 5 000 руб за то, чтобы ты оформил на себя дебетовую карту и отдал её ему. Что это?",
-    a: ["Обычная подработка без лишних хлопот", "Дропперство — уголовная статья 159 УК РФ, все украденные деньги и полиция придут к владельцу карты", "Банковская акция для молодежи"],
-    right: 1
-  },
-  {
-    q: "Работодатель говорит: «Поработай месяц без оформления, если сработаемся — заключим договор». Как поступить?",
-    a: ["Согласиться сразу, чтобы не упустить работу", "Потребовать договор ГПХ, самозанятость через приложение или отказаться: велик риск остаться без выплат", "Согласиться, но выходить на работу когда захочется"],
-    right: 1
-  },
-  {
-    q: "Вам звонят: «С вашего счёта пытаются перевести государственные подъёмные выплаты, срочно назовите код из СМС».",
-    a: ["Срочно продиктовать код", "Немедленно положить трубку: сотрудники банков никогда не просят коды из СМС", "Попросить перезвонить завтра"],
-    right: 1
-  }
+/* ============ данные ============ */
+const ROLES = [
+  {id:"child",   label:"Ребёнок"},
+  {id:"curator", label:"Куратор"},
+  {id:"psy",     label:"Психолог"},
+  {id:"teacher", label:"Преподаватель"},
+  {id:"admin",   label:"Администратор"}
 ];
 
-function render() {
-  const main = document.getElementById("mainApp");
-  document.getElementById("userBox").hidden = !S.isLogged;
+const TRACKS = {
+  people:{name:"Работа с людьми", blurb:"Помогать, объяснять, договариваться"},
+  tech:  {name:"Техника и ремонт", blurb:"Разбираться, чинить, собирать руками"},
+  sign:  {name:"Данные и код",     blurb:"Порядок, цифры, логика, программы"},
+  image: {name:"Дизайн и медиа",   blurb:"Придумывать образы, снимать, оформлять"},
+  nature:{name:"Природа и агро",   blurb:"Растения, животные, живое хозяйство"}
+};
 
-  if (!S.isLogged) {
-    main.innerHTML = `
-      <div class="card" style="max-width:440px; margin:40px auto; text-align:center;">
-        <div style="font-size:42px; margin-bottom:8px;">🎓</div>
-        <h1>Вход в Навигатор</h1>
-        <p class="muted">Введи свой персональный ключ, который тебе дал воспитатель или куратор.</p>
-        <div style="margin:20px 0; text-align:left;">
-          <label style="display:block; font-size:13px; font-weight:700; color:var(--ink-muted); margin-bottom:6px;">КЛЮЧ ДОСТУПА</label>
-          <input type="text" id="loginKey" value="ДЕМО-01-4821" style="width:100%; padding:12px; font-size:16px; font-family:monospace; border:2px solid var(--line); border-radius:10px; background:var(--bg); color:var(--ink);">
-        </div>
-        <div style="margin:16px 0 24px; text-align:left;">
-          <label style="display:block; font-size:13px; font-weight:700; color:var(--ink-muted); margin-bottom:6px;">КАК ТЕБЯ ЗОВУТ</label>
-          <input type="text" id="loginName" value="Артём" style="width:100%; padding:12px; font-size:16px; border:2px solid var(--line); border-radius:10px; background:var(--bg); color:var(--ink);">
-        </div>
-        <button class="btn" id="doLoginBtn" style="width:100%; justify-content:center;">Начать занятие →</button>
-      </div>
-    `;
-    return;
+const QUICK = [
+  {q:"Что тебе ближе, когда есть свободный час?", a:[
+    {t:"Разобрать и починить что-нибудь", k:"tech"},
+    {t:"Порисовать, снять видео, собрать музыку", k:"image"},
+    {t:"Поговорить, помочь кому-то разобраться", k:"people"},
+    {t:"Повозиться с цифрами, схемами, игрой на логику", k:"sign"}
+  ]},
+  {q:"Какая похвала тебе приятнее?", a:[
+    {t:"«Ты классно объяснил»", k:"people"},
+    {t:"«У тебя руки на месте»", k:"tech"},
+    {t:"«Красиво получилось»", k:"image"},
+    {t:"«Ты нашёл ошибку, которую никто не видел»", k:"sign"}
+  ]},
+  {q:"Где бы ты скорее провёл целый день?", a:[
+    {t:"В мастерской", k:"tech"},
+    {t:"В теплице или на ферме", k:"nature"},
+    {t:"За монтажом ролика", k:"image"},
+    {t:"За компьютером с задачей", k:"sign"}
+  ]}
+];
+
+const PSY_ITEMS = [
+  {t:"Мне легко начать разговор с новым человеком", k:"people"},
+  {t:"Меня просят помочь разобраться, когда кто-то не понял", k:"people"},
+  {t:"Я замечаю, когда человеку рядом плохо", k:"people"},
+  {t:"Мне интересно, как устроен механизм внутри", k:"tech"},
+  {t:"Я скорее починю сам, чем отдам мастеру", k:"tech"},
+  {t:"Мне нравится работать инструментом", k:"tech"},
+  {t:"Я люблю, когда всё разложено по порядку", k:"sign"},
+  {t:"Мне не скучно долго возиться с таблицей или схемой", k:"sign"},
+  {t:"Я быстро замечаю ошибку в тексте или расчёте", k:"sign"},
+  {t:"Я часто что-то рисую, снимаю или придумываю", k:"image"},
+  {t:"Мне важно, как вещь выглядит, а не только работает", k:"image"},
+  {t:"Я могу долго подбирать цвет, кадр или музыку", k:"image"},
+  {t:"Мне спокойно рядом с растениями или животными", k:"nature"},
+  {t:"Я готов ухаживать за чем-то живым каждый день", k:"nature"},
+  {t:"Мне интересно, почему растение болеет", k:"nature"}
+];
+const LIKERT = [
+  {v:0, t:"Не про меня"},
+  {v:1, t:"Иногда"},
+  {v:2, t:"Часто"},
+  {v:3, t:"Точно про меня"}
+];
+
+const COURSES = [
+  {id:"c1", title:"Первый ремонт: инструмент и безопасность", track:"tech", level:"С нуля", age:"14+", hours:12, lessons:9, partner:"Колледж-партнёр, волонтёры", supervised:true},
+  {id:"c2", title:"Электрика в быту: как не бояться щитка", track:"tech", level:"Базовый", age:"16+", hours:16, lessons:12, partner:"Колледж-партнёр", supervised:true},
+  {id:"c3", title:"Excel и таблицы для жизни и работы", track:"sign", level:"С нуля", age:"12+", hours:10, lessons:8, partner:"Онлайн-школа-партнёр"},
+  {id:"c4", title:"Питон с нуля: первая программа", track:"sign", level:"С нуля", age:"12+", hours:24, lessons:18, partner:"Онлайн-школа-партнёр"},
+  {id:"c5", title:"Съёмка и монтаж на телефон", track:"image", level:"С нуля", age:"12+", hours:14, lessons:11, partner:"Студия-партнёр, волонтёры"},
+  {id:"c6", title:"Основы дизайна: как сделать красиво", track:"image", level:"Базовый", age:"12+", hours:18, lessons:14, partner:"Студия-партнёр"},
+  {id:"c7", title:"Как договариваться: разговор, отказ, просьба", track:"people", level:"С нуля", age:"12+", hours:8, lessons:6, partner:"Психологи проекта"},
+  {id:"c8", title:"Растениеводство: от семечка до урожая", track:"nature", level:"С нуля", age:"12+", hours:20, lessons:15, partner:"Агроколледж-партнёр"},
+  {id:"c9", title:"Взрослая жизнь: документы, жильё, деньги", track:"people", level:"Советуем всем", age:"14+", hours:12, lessons:10, partner:"Юристы фонда"}
+];
+
+const ATTEST_REPAIR = [
+  {q:"Перед работой с электроинструментом нужно:", a:["Сразу начать, если инструмент знакомый","Проверить кабель, крепление насадки и убрать лишнее со стола","Позвать кого-нибудь смотреть"], right:1},
+  {q:"Отвёртка с изолированной ручкой нужна, чтобы:", a:["Было удобнее держать","Снизить риск удара током при работе рядом с проводкой","Она была красивее"], right:1},
+  {q:"Если инструмент искрит или греется:", a:["Дать остыть и продолжить","Прекратить работу и сообщить взрослому","Работать короткими подходами"], right:1},
+  {q:"Рабочее место после работы:", a:["Убирает тот, кто пришёл следующим","Убирает тот, кто работал","Можно не убирать, если продолжишь завтра"], right:1},
+  {q:"Саморез в гипсокартон без дюбеля держит:", a:["Любую полку","Только лёгкое, тяжёлое сорвётся","Ничего не держит"], right:1}
+];
+
+const ATTEST_MONEY = [
+  {q:"Знакомый предлагает 5 000 ₽ за то, чтобы оформить банковскую карту на твоё имя и отдать ему. Что это?", a:["Лёгкая подработка без усилий","Дропперство (ст. 159 и 187 УК РФ) — все украденные деньги и полиция придут к владельцу карты","Обычная банковская услуга"], right:1},
+  {q:"Работодатель на первой подработке говорит: «Поработай две недели без договора, посмотрим на тебя, потом оформим».", a:["Согласиться без вопросов","Попросить трудовой договор, ГПХ или оформление самозанятости — иначе велик риск остаться без оплаты","Отдать ему оригинал паспорта в залог"], right:1},
+  {q:"Тебе звонят и говорят: «С вашего счёта пытаются списать подъёмные выплаты, срочно назовите код из СМС для перевода на безопасный счёт».", a:["Назвать код из СМС","Положить трубку: «безопасных счетов» не существует, банк никогда не просит коды из СМС","Перевести деньги по номеру телефона звонящего"], right:1},
+  {q:"Прежде чем подписать любой документ про жильё, доверенность или крупную сумму денег:", a:["Подписать сразу, если торопят","Сначала позвонить куратору, наставнику или юристу фонда и показать документ","Подписать, не читая мелкий шрифт"], right:1},
+  {q:"Если в мессенджере предлагают 10 000 ₽ в день за «курьерскую доставку закрытых свёрток без оформления»:", a:["Отличная подработка","Сразу отказаться и заблокировать: это вовлечение в криминал, уголовная ответственность с 16 лет","Попробовать один раз"], right:1}
+];
+
+function getAttest(){
+  return S.course === "c9" ? ATTEST_MONEY : ATTEST_REPAIR;
+}
+const ATTEST = ATTEST_REPAIR;
+
+const ORGS = ["Учреждение А (демо)","Учреждение Б (демо)","Учреждение В (демо)","Учреждение Г (демо)"];
+
+const KIDS = [
+  {id:"k1", name:"Ребёнок А (демо)", age:"15–16", toExit:31, org:ORGS[0], top:"tech",   progress:62, streak:5,  last:"сегодня",       risk:"ok",   consent:"есть", flag:false},
+  {id:"k2", name:"Ребёнок Б (демо)", age:"15–16", toExit:27, org:ORGS[0], top:"image",  progress:88, streak:12, last:"сегодня",       risk:"ok",   consent:"есть", flag:false},
+  {id:"k3", name:"Ребёнок В (демо)", age:"13–14", toExit:52, org:ORGS[0], top:"sign",   progress:9,  streak:0,  last:"19 дней назад", risk:"lost", consent:"есть", flag:false},
+  {id:"k4", name:"Ребёнок Г (демо)", age:"17–18", toExit:4, org:ORGS[1], top:"people", progress:41, streak:2,  last:"4 дня назад",   risk:"warn", consent:"есть", flag:true},
+  {id:"k5", name:"Ребёнок Д (демо)", age:"13–14", toExit:49, org:ORGS[1], top:"nature", progress:23, streak:1,  last:"вчера",         risk:"warn", consent:"истекает через 2 недели", flag:false},
+  {id:"k6", name:"Ребёнок Е (демо)", age:"15–16", toExit:22, org:ORGS[2], top:"image",  progress:74, streak:8,  last:"сегодня",       risk:"ok",   consent:"есть", flag:false}
+];
+
+const KEYS = [
+  {key:"ДЕМО-01-4821", org:ORGS[0], age:"teen",  issued:"12.08.2026", by:"Сотрудник А.", rep:"организация-опекун", doc:"Согласие №117", status:"активирован"},
+  {key:"ДЕМО-01-4822", org:ORGS[0], age:"young", issued:"12.08.2026", by:"Сотрудник А.", rep:"родитель с сохранёнными правами", doc:"Согласие №118", status:"активирован"},
+  {key:"ДЕМО-02-1140", org:ORGS[1], age:"teen",  issued:"14.08.2026", by:"Сотрудник Б.", rep:"организация-опекун", doc:"Согласие №42",  status:"не активирован"},
+  {key:"ДЕМО-04-9001", org:ORGS[0], age:"grad",  issued:"03.02.2026", by:"Сотрудник А.", rep:"собственное согласие", doc:"Согласие №203", status:"активирован"},
+  {key:"ДЕМО-03-0330", org:ORGS[2], age:"teen",  issued:"05.08.2026", by:"Сотрудник В.", rep:"не указан",          doc:"—",             status:"заблокирован"}
+];
+
+/* Роль определяется учётной записью, а не переключателем в интерфейсе. */
+const STAFF = [
+  {login:"kurator",      pass:"demo", role:"curator", name:"Марина С.",     title:"Куратор"},
+  {login:"psiholog",     pass:"demo", role:"psy",     name:"Ольга В.",      title:"Психолог"},
+  {login:"prepodavatel", pass:"demo", role:"teacher", name:"Игорь П.",      title:"Преподаватель"},
+  {login:"admin",        pass:"demo", role:"admin",   name:"Администратор", title:"Администратор фонда"}
+];
+
+/* ============ состояние ============ */
+const BLANK = {
+  role:"child", screen:"login", ageBand:"teen", theme:"light", roleTitle:"Ученик", loginTab:"kid",
+  loggedIn:false, name:"Артём", org:null, quick:{}, quickDone:false,
+  anketaStep:0, anketa:{}, anketaDone:false,
+  psy:{}, psyDone:false,
+  course:"c9", lessonMode:"video", hwSent:false, photo:false,
+  attest:{}, attestDone:false, attestScore:0, exit:{},
+  psyKid:"k1", checked:{}
+};
+let S = JSON.parse(JSON.stringify(BLANK));
+try{ const saved = sessionStorage.getItem("navigator-child"); if(saved) S = Object.assign(S, JSON.parse(saved)); }catch(e){}
+function save(){ try{ sessionStorage.setItem("navigator-child", JSON.stringify(S)); }catch(e){} }
+
+/* Тема выставляется до первого рендера: иначе зритель с тёмной системной темой
+   на секунду видит тёмный интерфейс. По умолчанию светлая — одинаково у всех. */
+if(!S.theme) S.theme = "light";
+document.documentElement.setAttribute("data-theme", S.theme);
+
+/* ============ утилиты ============ */
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const note = () => "";   // проектные заметки в интерфейсе не показываются
+
+function scores(){
+  const acc = {people:0,tech:0,sign:0,image:0,nature:0};
+  PSY_ITEMS.forEach((it,i)=>{ if(S.psy[i]!=null) acc[it.k]+=S.psy[i]; });
+  Object.keys(S.quick).forEach(i=>{ const k = QUICK[i].a[S.quick[i]].k; acc[k]+=2; });
+  return acc;
+}
+function ranked(){
+  const a = scores();
+  return Object.keys(a).map(k=>({k, v:a[k]})).sort((x,y)=>y.v-x.v);
+}
+function isTie(){
+  const r = ranked();
+  return r.length > 1 && r[0].v === r[1].v;
+}
+function leaders(){
+  const r = ranked();
+  return r.filter(x => x.v === r[0].v);
+}
+function topTrack(){ return ranked()[0].k; }
+function coursesFor(k){
+  const mine = COURSES.filter(c=>c.track===k);
+  const must = COURSES.filter(c=>c.id==="c9");
+  return mine.concat(must.filter(c=>!mine.includes(c)));
+}
+function courseById(id){ return COURSES.find(c=>c.id===id); }
+
+/* ============ карта экранов ============ */
+/* Возрастной регистр. 12–14 и 15–18 — это не «то же самое покрупнее»:
+   у младших другой горизонт (не «кем стать», а «что попробовать в эту субботу»),
+   другая длина текста и другие слова. A(young, teen) выбирает по регистру. */
+const young = () => S.ageBand === "young";
+const grad  = () => S.ageBand === "grad";
+const A = (y, t) => young() ? y : t;
+
+/* Три регистра, а не два. 12–14 — «пробуем разное», 15–18 — «выбираем»,
+   18+ — «первый год сам». Последний в ТЗ отсутствует вовсе: продукт там
+   заканчивается сертификатом, хотя цель проекта наступает как раз после выпуска. */
+const JOURNEY_ALL = [
+  ["login",       "Вход по ключу",     "Вход по ключу",         "all"],
+  ["insight",     "Первый разговор",   "Три вопроса",           "all"],
+  ["anketa",      "Анкета",            "Немного о себе",        "all"],
+  ["psytest",     "Склонности",        "Что тебе нравится",     "all"],
+  ["profile",     "Твой профиль",      "Что получилось",        "all"],
+  ["catalog",     "Каталог курсов",    "Что можно попробовать", "all"],
+  ["lesson",      "Урок",              "Занятие",               "all"],
+  ["attestation", "Аттестация",        "Проверь себя",          "all"],
+  ["certificate", "Сертификат",        "Твой документ",         "all"],
+  ["cabinet",     "Личный кабинет",    "Моя страница",          "all"],
+  ["exitprep",    "Подготовка к выходу","Подготовка к выходу",  "teen"],
+  ["aftergrad",   "Первый год сам",    "Первый год сам",        "grad"]
+];
+const JOURNEY = JOURNEY_ALL;
+const journeySteps = () => JOURNEY_ALL.filter(j =>
+  j[3] === "all" || (j[3] === "teen" && !young()) || (j[3] === "grad" && grad()));
+const jlabel = j => young() ? j[2] : j[1];
+const OTHER = {
+  curator:[["curator","Дети под сопровождением"]],
+  psy:[["psy_list","Список на диагностике"],["psy_kid","Карточка ребёнка"]],
+  teacher:[["teacher","Мои курсы"],["teacher_check","Проверка заданий"]],
+  admin:[["admin_keys","Ключи доступа"],["admin_analytics","Аналитика"],["admin_users","Пользователи и роли"]]
+};
+const doneOf = id => ({
+  login:S.loggedIn, insight:S.quickDone, anketa:S.anketaDone, psytest:S.psyDone,
+  profile:S.psyDone, catalog:!!S.course, lesson:S.hwSent,
+  attestation:S.attestDone, certificate:S.attestDone && S.attestScore>=3, cabinet:false,
+  exitprep:Object.keys(S.exit||{}).length>=4, aftergrad:false
+}[id]);
+
+/* ============ рендер оболочки ============ */
+function renderRail(){
+  let html = "";
+  if(S.role==="child"){
+    html += `<div class="railgroup"><div class="eyebrow" style="margin:0 0 9px 4px">Путь ребёнка</div><ul class="steps">`;
+    journeySteps().forEach((j,i)=>{
+      const id = j[0], d = doneOf(id);
+      html += `<li><button data-screen="${id}" aria-current="${S.screen===id}">
+        <span class="num ${d?"done":""}">${d?"✓":i+1}</span><span>${esc(jlabel(j))}</span></button></li>`;
+    });
+    html += `</ul></div>`;
+  } else {
+    const list = OTHER[S.role];
+    html += `<div class="railgroup"><div class="eyebrow" style="margin:0 0 9px 4px">Рабочее место</div><ul class="steps">`;
+    list.forEach(([id,label])=>{
+      html += `<li><button data-screen="${id}" aria-current="${S.screen===id}">
+        <span class="dot">▪</span><span>${esc(label)}</span></button></li>`;
+    });
+    html += `</ul></div>`;
   }
-
-  // Экран урока
-  document.getElementById("userNameDisplay").textContent = `${S.name} · ${S.age} лет`;
-
-  main.innerHTML = `
-    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
-      <div>
-        <span class="badge accent">Курс для 16–18 лет</span>
-        <h1 style="margin:6px 0 2px;">Первые деньги: как не дать себя развести</h1>
-        <p class="muted">Урок 1 из 4 · Дропперы, лёгкий заработок и аренда карты</p>
-      </div>
-      <div class="tabs-switch">
-        <button class="${S.mode==='video'?'active':''}" id="modeVideoBtn">🎬 Видеоурок</button>
-        <button class="${S.mode==='text'?'active':''}" id="modeTextBtn">📖 Текстом</button>
-      </div>
-    </div>
-
-    ${S.mode === 'video' ? `
-      <div class="card" style="padding:16px;">
-        <div class="video-wrap">
-          <iframe src="${S.videoUrl}" allow="clipboard-write; autoplay; fullscreen" allowFullScreen></iframe>
-        </div>
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-top:12px;">
-          <span class="muted" style="font-size:13px;">Видео из Rutube без входа и рекламы (5 минут).</span>
-          <div style="display:flex; gap:6px;">
-            <input type="text" id="customVideoInput" placeholder="Вставить ссылку на своё видео..." value="${S.videoUrl}" style="padding:6px 10px; font-size:13px; border:1px solid var(--line); border-radius:8px; width:260px; background:var(--bg); color:var(--ink);">
-            <button class="btn ghost" id="applyCustomVideoBtn" style="padding:6px 12px; font-size:13px;">Обновить</button>
-          </div>
-        </div>
-      </div>
-    ` : `
-      <div class="card">
-        <div style="margin-bottom:16px; border-left:4px solid var(--crit); padding-left:14px;">
-          <h2 style="color:var(--crit); margin-bottom:4px;">1. «Сдай карту в аренду за 5 000 ₽» — это преступление</h2>
-          <p>Никогда и никому не отдавай свою банковскую карту. Через такие карты преступники отмывают украденные деньги. По закону (ст. 159 УК РФ) полиция придёт к владельцу карты — то есть к тебе. Счета заблокируют по 115-ФЗ, а государственные подъёмные выплаты заморозят.</p>
-        </div>
-        <div style="margin-bottom:16px; border-left:4px solid var(--warn); padding-left:14px;">
-          <h2 style="color:var(--warn); margin-bottom:4px;">2. «Быстрый заработок в Telegram — 10 000 ₽ в день»</h2>
-          <p>Если в мессенджере предлагают лёгкие деньги за «доставку закрытых посылок» или «приём переводов» — это криминал (наркокурьеры или обнал). Уголовная ответственность по этим статьям наступает с 16 лет. Лёгких денег без труда не бывает.</p>
-        </div>
-        <div style="border-left:4px solid var(--good); padding-left:14px;">
-          <h2 style="color:var(--good); margin-bottom:4px;">3. Как заработать первые деньги честно</h2>
-          <p>В 16–18 лет можно работать курьером, бариста, в колл-центре или на складе. Главное — официальный договор (ГПХ или трудовой) или статус самозанятого через официальное приложение «Мой налог». Честный работодатель платит за твою работу, а не просит переводить чужие деньги.</p>
-        </div>
-      </div>
-    `}
-
-    <!-- Интерактивный тренажер ситуации -->
-    <div class="card">
-      <span class="badge warn">Жизненный тренажёр</span>
-      <h2 style="margin-top:10px;">Ситуация: знакомый просит помочь с переводом</h2>
-      <p class="muted">Тебе в соцсетях пишет знакомый парень: <i>«Братан, выручи, у меня лимит в банке исчерпан. Я переведу тебе на карту 30 000 ₽, ты снимешь в банкомате и отдашь мне, а 3 000 ₽ оставишь себе за помощь».</i></p>
-      
-      <div style="margin-top:16px;">
-        <button class="choice-btn ${S.scenarioAnswer==='bad'?'bad':''}" id="scenarioBad">
-          <span>❌</span> <span>Согласиться и помочь: 3 000 рублей не лишние, он же знакомый</span>
-        </button>
-        <button class="choice-btn ${S.scenarioAnswer==='good'?'good':''}" id="scenarioGood">
-          <span>✅</span> <span>Отказать и ни в коем случае не давать номер карты</span>
-        </button>
-      </div>
-
-      ${S.scenarioAnswer === 'bad' ? `
-        <div style="margin-top:12px; background:var(--crit-soft); border-radius:12px; padding:14px; border:1px solid var(--crit); color:var(--crit);">
-          <b>Опасно!</b> Это классическая схема «дропперства». Деньги, которые тебе переведут — украдены у других людей. Полиция придёт именно к тебе, твою карту заблокируют, а долг спишут с твоих выплат.
-        </div>
-      ` : ''}
-
-      ${S.scenarioAnswer === 'good' ? `
-        <div style="margin-top:12px; background:var(--good-soft); border-radius:12px; padding:14px; border:1px solid var(--good); color:var(--good);">
-          <b>Правильно!</b> Твоя банковская карта — только твоя личная. Никогда не пропускай через неё чужие деньги.
-        </div>
-      ` : ''}
-    </div>
-
-    <!-- Аттестация -->
-    <div class="card" id="testBlock">
-      <span class="badge good">Проверь себя</span>
-      <h2 style="margin-top:10px;">Мини-тест по уроку (3 вопроса)</h2>
-      <p class="muted">Ответь правильно, чтобы получить электронный сертификат навыка.</p>
-
-      ${TEST_QUESTIONS.map((q, qIndex) => `
-        <div style="margin:20px 0;">
-          <div style="font-weight:700; margin-bottom:10px;">${qIndex+1}. ${q.q}</div>
-          ${q.a.map((opt, aIndex) => {
-            const isSelected = S.testAnswers[qIndex] === aIndex;
-            let cls = "";
-            if (S.testSubmitted) {
-              if (aIndex === q.right) cls = "good";
-              else if (isSelected) cls = "bad";
-            } else if (isSelected) {
-              cls = "selected";
-            }
-            return `
-              <button class="choice-btn ${cls}" data-q="${qIndex}" data-a="${aIndex}" ${S.testSubmitted?'disabled':''}>
-                ${opt}
-              </button>
-            `;
-          }).join('')}
-        </div>
-      `).join('')}
-
-      ${!S.testSubmitted ? `
-        <button class="btn" id="submitTestBtn" style="margin-top:10px;">Проверить ответы</button>
-      ` : `
-        <div style="background:${S.testScore>=2?'var(--good-soft)':'var(--warn-soft)'}; border-radius:12px; padding:16px; margin-top:14px;">
-          <h2 style="color:${S.testScore>=2?'var(--good)':'var(--warn)'}; margin:0 0 6px;">
-            ${S.testScore>=2 ? '🎉 Отлично! Тест сдан (' + S.testScore + ' из 3)' : 'Нужно ещё раз повторить (' + S.testScore + ' из 3)'}
-          </h2>
-          <p class="muted">${S.testScore>=2 ? 'Твой сертификат по финансовой безопасности готов!' : 'Попробуй ещё раз — пересдавать можно сразу.'}</p>
-          ${S.testScore>=2 ? `
-            <div style="background:var(--card); border:2px dashed var(--good); border-radius:14px; padding:20px; text-align:center; margin-top:14px;">
-              <div style="font-size:32px;">📜</div>
-              <div style="font-size:12px; text-transform:uppercase; letter-spacing:0.05em; color:var(--ink-muted); margin-top:4px;">Сертификат выдан</div>
-              <h2 style="margin:6px 0;">${S.name}</h2>
-              <p style="color:var(--good); font-weight:700; margin:0;">Курс: Финансовая безопасность и защита от мошенников</p>
-              <div style="font-size:12px; color:var(--ink-muted); margin-top:8px;">Дата сдачи: 16 ноября 2026 · Код проверки: СД-4821</div>
-            </div>
-          ` : `
-            <button class="btn ghost" id="retryTestBtn">Пройти заново</button>
-          `}
-        </div>
-      `}
-    </div>
-  `;
+  const railEl = document.getElementById("rail");
+  railEl.innerHTML = S.loggedIn ? html : "";
+  railEl.hidden = !S.loggedIn;
+  document.querySelector(".shell").classList.toggle("norail", !S.loggedIn);
 }
 
-// Слушатели событий
-document.addEventListener("click", (e) => {
-  if (e.target.id === "logoutBtn") {
-    S.isLogged = false; save(); render(); return;
+/* ============ экраны: ребёнок ============ */
+const V = {};
+
+V.login = () => `
+<div class="stack" style="max-width:470px; margin:0 auto">
+  ${gateMsg ? `<div class="locked">Раздел «${esc(gateMsg)}» доступен после входа.</div>` : ""}
+  <div class="hero">
+    <div class="eyebrow">Закрытый доступ · Кабинет ученика</div>
+    <h1 style="margin-top:8px">Навигатор</h1>
+    <p style="margin-top:10px">Образовательная платформа для подростков.
+      Вход только по выданному ключу — постороннего здесь нет.</p>
+  </div>
+
+  <div class="card pad">
+    <form class="stack-sm" data-act="loginForm">
+      <label class="field">Ключ доступа
+        <input type="text" id="keyInput" value="ДЕМО-01-4821" spellcheck="false"
+          style="font-family:var(--font-mono); letter-spacing:.06em">
+      </label>
+      <label class="field">Как тебя зовут
+        <input type="text" id="nameInput" value="${esc(S.name)}">
+      </label>
+      <div id="keyErr" role="alert" aria-live="assertive"></div>
+      <button class="btn" type="submit" data-act="login" style="margin-top:6px">Войти</button>
+      <p class="dim">Ключ выдаёт куратор. Если ключ потерялся — подойди к нему: он выдаст новый,
+        а тебе придёт уведомление о том, что доступ восстановили.</p>
+    </form>
+  </div>
+
+  <details class="card pad demoacc" open>
+    <summary>Тестовые ключи учеников (нажмите для подстановки)</summary>
+    <div class="stack-sm" style="margin-top:12px">
+      <div class="row" style="gap:6px">
+        <button class="toolbtn" type="button" data-act="fillKey" data-key="ДЕМО-01-4821" data-name="Артём">ДЕМО-01-4821 (15–18 лет)</button>
+        <button class="toolbtn" type="button" data-act="fillKey" data-key="ДЕМО-01-4822" data-name="Даня">ДЕМО-01-4822 (12–14 лет)</button>
+        <button class="toolbtn" type="button" data-act="fillKey" data-key="ДЕМО-04-9001" data-name="Илья">ДЕМО-04-9001 (выпускник 18+)</button>
+        <button class="toolbtn" type="button" data-act="fillKey" data-key="ДЕМО-03-0330" data-name="Максим">ДЕМО-03-0330 (заблокирован)</button>
+      </div>
+      <p class="dim">Возрастной режим определяется автоматически по ключу доступа.</p>
+    </div>
+  </details>
+</div>`;
+
+V.insight = () => {
+  const answered = Object.keys(S.quick).length;
+  if(S.quickDone){
+    const lead = leaders();
+    return `<div class="stack">
+      <div class="eyebrow">Шаг 2 · ${A("Три вопроса","Первый разговор")}</div>
+      <h1>${A("Смотри, что вышло","Уже кое-что видно")}</h1>
+      <div class="card pad" style="border-color:var(--accent)">
+        <div class="pill acc">${lead.length>1?"Пока поровну":"Первая догадка"}</div>
+        ${lead.length>1
+          ? `<h2 style="margin-top:12px">${A("Тебе нравится сразу несколько","Тебе одинаково близко несколько направлений")}</h2>
+             <div class="stack-sm" style="margin-top:12px">
+               ${lead.map(x=>`<div><b>${esc(TRACKS[x.k].name)}</b> <span class="dim">— ${esc(TRACKS[x.k].blurb)}</span></div>`).join("")}
+             </div>
+             <p class="muted" style="margin-top:12px">${A("Это нормально. Выбирать сейчас ничего не надо.","По трём вопросам ещё рано выбирать одно. Дальше вопросов больше — там станет понятнее.")}</p>`
+          : `<h2 style="margin-top:12px">${esc(TRACKS[lead[0].k].name)}</h2>
+             <p class="muted" style="margin-top:6px">${esc(TRACKS[lead[0].k].blurb)}. ${A("Это не выбор на всю жизнь. Просто отсюда интереснее начать.","Это пока только догадка по трём вопросам — дальше проверим подробнее.")}</p>`}
+      </div>
+      ${note("Усиление №3","Ценность выдана до длинных опросников. В ТЗ ребёнок сначала проходит анкету и тесты и только потом что-то получает — так теряется большая часть подростков.")}
+      ${note("Возрастной регистр","Переключатель 12–14 / 15–18 в шапке. В продукте регистр берётся из записи ключа, а не выбирается ребёнком. Отличается не размер шрифта, а горизонт: у младших продукт не про «кем стать», а про «что попробовать в ближайшее время», и курс подаётся как одно короткое занятие, а не как 12 часов.")}
+      <div class="row"><button class="btn" data-screen="anketa">${A("Дальше","Дальше — короткая анкета")}</button>
+      <button class="btn ghost" data-act="quickReset">Пройти заново</button></div>
+    </div>`;
   }
-  if (e.target.id === "doLoginBtn") {
-    const k = document.getElementById("loginKey").value.trim();
-    const n = document.getElementById("loginName").value.trim();
-    S.isLogged = true;
-    if (n) S.name = n;
-    save(); render(); return;
+  return `<div class="stack">
+    <div class="eyebrow">Шаг 2 · Три вопроса, меньше минуты</div>
+    <h1>${A("Три вопроса","Начнём с простого")}</h1>
+    <p class="muted">${A("Правильных ответов нет. Просто ткни в то, что больше похоже на тебя.","Никаких правильных ответов. Выбирай то, что ближе.")}</p>
+    ${QUICK.map((q,qi)=>`
+      <div class="card pad">
+        <h3>${esc(q.q)}</h3>
+        <div class="stack-sm" style="margin-top:12px">
+          ${q.a.map((a,ai)=>`<button class="choice" data-act="quick" data-q="${qi}" data-a="${ai}"
+            aria-pressed="${S.quick[qi]===ai}"><span class="mark"></span><span>${esc(a.t)}</span></button>`).join("")}
+        </div>
+      </div>`).join("")}
+    <div class="row">
+      <button class="btn" data-act="quickDone" ${answered<3?"disabled":""}>${A("Посмотреть","Показать, что получилось")}</button>
+      <span class="dim">${answered} из 3</span>
+    </div>
+  </div>`;
+};
+
+const ANKETA_STEPS = [
+  {title:"Учёба", fields:[
+    {k:"grade", label:"Класс", type:"select", opts:["7","8","9","10","11","колледж"]},
+    {k:"fav", label:"Любимый предмет", type:"select", opts:["Технология / труд","Информатика","Биология","ИЗО","Литература","Никакой"]}
+  ]},
+  {title:"Чем занимаешься сам", fields:[
+    {k:"hobby", label:"Что делаешь в свободное время чаще всего", type:"select", opts:["Мастерю руками","Рисую / снимаю","Играю и разбираюсь в компьютере","Общаюсь, помогаю другим","Ухаживаю за растениями или животными"]}
+  ]},
+  {title:"Как тебе удобно учиться", fields:[
+    {k:"device", label:"С чего ты чаще заходишь", type:"select", opts:["Общий компьютер в классе","Телефон, но интернет слабый","Свой телефон, интернет нормальный"]},
+    {k:"time", label:"Сколько времени в день реально есть", type:"select", opts:["15–20 минут","Полчаса","Час и больше"]}
+  ]},
+  {title:"Планы", fields:[
+    {k:"plan", label:"Что думаешь после выпуска", type:"select", opts:["Колледж","Работа сразу","Ещё не думал","Хочу сначала посмотреть, какие бывают варианты"]}
+  ]}
+];
+
+/* У младших последний шаг другой: «кем стать после выпуска» в 12–13 лет —
+   вопрос про чужую жизнь. Спрашиваем про ближайшее, на что они реально влияют. */
+const ANKETA_YOUNG_LAST = {title:"Что дальше", fields:[
+  {k:"plan", label:"Что бы ты попробовал в ближайшее время", type:"select",
+   opts:["Что-нибудь руками","Что-нибудь на компьютере","Рисовать или снимать","Возиться с растениями или животными","Пока не знаю — покажите варианты"]}
+]};
+const anketaSteps = () => young()
+  ? ANKETA_STEPS.slice(0, -1).concat([ANKETA_YOUNG_LAST])
+  : ANKETA_STEPS;
+
+V.anketa = () => {
+  if(S.anketaDone){
+    return `<div class="stack">
+      <div class="eyebrow">Шаг 3 · Анкета</div>
+      <h1>Анкета заполнена</h1>
+      <div class="card pad"><div class="grid2">
+        ${anketaSteps().flatMap(s=>s.fields).map(f=>`<div><div class="eyebrow">${esc(f.label)}</div>
+          <div style="margin-top:3px">${esc(S.anketa[f.k]||"—")}</div></div>`).join("")}
+      </div>
+      <hr class="hr" style="margin:16px 0">
+      <p class="dim">Возраст и учреждение мы не спрашивали — они уже привязаны к твоему ключу доступа.</p>
+      ${note("Минимизация данных + этика","В ТЗ анкета спрашивает возраст и учреждение заново. Это лишний сбор ПДн и лишний экран в воронке, а главное — ребёнка заставляют вручную выбрать название своего детского дома на первом же экране знакомства.")}
+      </div>
+      ${S.anketa.device && S.anketa.device.indexOf("слабый")>-1 ? `<div class="card pad" style="border-color:var(--amber)">
+        <div class="pill amb">Учтено</div>
+        <p style="margin-top:9px">Ты отметил слабый интернет — уроки будут открываться сразу в текстовом виде, видео по желанию.</p>
+        ${note("Усиление №6","Ответ про устройство и канал напрямую меняет формат выдачи контента. В ТЗ такой связи нет: там видео — основной формат.")}
+      </div>`:""}
+      <div class="row"><button class="btn" data-screen="psytest">Дальше — про склонности</button>
+      <button class="btn ghost" data-act="anketaReset">Заполнить заново</button></div>
+    </div>`;
   }
-  if (e.target.id === "modeVideoBtn") {
-    S.mode = "video"; save(); render(); return;
+  const st = anketaSteps()[S.anketaStep];
+  const pct = Math.round(S.anketaStep/anketaSteps().length*100);
+  return `<div class="stack">
+    <div class="eyebrow">Шаг 3 · Анкета · часть ${S.anketaStep+1} из ${anketaSteps().length}</div>
+    <h1>${esc(st.title)}</h1>
+    <div class="bar"><i style="width:${pct}%"></i></div>
+    <div class="card pad"><div class="stack-sm">
+      ${st.fields.map(f=>`<label class="field">${esc(f.label)}
+        <select data-act="anketaField" data-k="${f.k}">
+          <option value="">— выбери —</option>
+          ${f.opts.map(o=>`<option ${S.anketa[f.k]===o?"selected":""}>${esc(o)}</option>`).join("")}
+        </select></label>`).join("")}
+    </div></div>
+    <div class="row">
+      ${S.anketaStep>0?`<button class="btn ghost" data-act="anketaBack">Назад</button>`:""}
+      <button class="btn" data-act="anketaNext" ${st.fields.every(f=>S.anketa[f.k])?"":"disabled"}>
+        ${S.anketaStep===anketaSteps().length-1?"Готово":"Дальше"}</button>
+      <span class="dim">Можно закрыть и вернуться — ответы сохраняются</span>
+    </div>
+    ${note("Раздел 5 ТЗ + крайний случай","Прогресс сохраняется после каждого шага. Отдельно: если анкета брошена на середине, профиль помечается неполным и рекомендации не выдаются как окончательные.")}
+  </div>`;
+};
+
+V.psytest = () => {
+  const answered = Object.keys(S.psy).length;
+  if(S.psyDone) return `<div class="stack">
+    <div class="eyebrow">Шаг 4 · Склонности</div>
+    <h1>Вопросы пройдены</h1>
+    <div class="card pad">
+      <div class="pill good">Готово</div>
+      <p style="margin-top:10px">Ответы записаны. Результат — на следующем шаге, в профиле.</p>
+      <div class="row" style="margin-top:14px">
+        <button class="btn" data-screen="profile">Открыть профиль</button>
+        <button class="btn ghost" data-act="psyReset">Пройти заново</button>
+      </div>
+    </div>
+  </div>`;
+  return `<div class="stack">
+    <div class="eyebrow">Шаг 4 · Склонности</div>
+    <h1>Что про тебя правда, а что нет</h1>
+    <p class="muted" style="max-width:60ch">${A("Это не контрольная. Плохих ответов тут нет. Твои ответы видит только психолог — больше никто. Есть одно исключение, и мы говорим о нём сразу: если он поймёт, что тебе угрожает опасность, он позовёт взрослых, которые помогут. И сначала скажет об этом тебе.","Это не экзамен и не проверка «нормальный ты или нет». Здесь нет плохих ответов. Твои ответы видит только психолог проекта — с одним исключением: если он поймёт, что тебе угрожает опасность, он обязан подключить взрослых, которые помогут, и сначала скажет об этом тебе.")}</p>
+    <div class="card pad" style="border-color:var(--crit)">
+      <div class="pill crit">Важно для заказчика</div>
+      <p style="margin-top:9px">Утверждения ниже — <b>демонстрационные</b>. Это не валидизированная методика и не психологическая диагностика. Реальный набор должен быть либо лицензирован у правообладателя, либо собран психологом-методологом с последующей валидацией.</p>
+      ${note("Вопрос 3 заказчику","Раздел 6 ТЗ говорит что мерить, но не говорит чем. Пока это не решено, любой тест на платформе — макет, а не инструмент.")}
+    </div>
+    <div class="bar"><i style="width:${Math.round(answered/PSY_ITEMS.length*100)}%"></i></div>
+    ${PSY_ITEMS.map((it,i)=>`
+      <div class="card pad" style="padding:16px 20px">
+        <div style="margin-bottom:10px">${esc(it.t)}</div>
+        <div class="likert">
+          ${LIKERT.map(l=>`<button data-act="psy" data-i="${i}" data-v="${l.v}"
+            aria-pressed="${S.psy[i]===l.v}">${esc(l.t)}</button>`).join("")}
+        </div>
+      </div>`).join("")}
+    <div class="row">
+      <button class="btn" data-act="psyDone" ${answered<PSY_ITEMS.length?"disabled":""}>Посмотреть результат</button>
+      <span class="dim">${answered} из ${PSY_ITEMS.length}</span>
+    </div>
+  </div>`;
+};
+
+V.profile = () => {
+  if(!S.psyDone) return `<div class="stack"><h1>Профиль пока пуст</h1>
+    <p class="muted">Сначала пройди короткий разговор и вопросы про склонности.</p>
+    <div class="row"><button class="btn" data-screen="insight">Начать</button></div></div>`;
+  const r = ranked(); const max = Math.max(...r.map(x=>x.v), 1);
+  const top = r[0].k;
+  const recs = coursesFor(top);
+  return `<div class="stack">
+    <div class="eyebrow">Шаг 5 · Твой профиль</div>
+    <h1>${esc(S.name)}, вот что получилось</h1>
+    <div class="card pad">
+      <h3>${A("Что тебе ближе","Твои сильные стороны")}</h3>
+      <div class="stack-sm" style="margin-top:14px">
+        ${r.slice(0,3).map(x=>`<div>
+          <div style="margin-bottom:5px">${esc(TRACKS[x.k].name)} <span class="dim">— ${esc(TRACKS[x.k].blurb)}</span></div>
+          <div class="bar ${x.k===top?"":"amb"}"><i style="width:${Math.round(x.v/max*100)}%"></i></div>
+        </div>`).join("")}
+      </div>
+      <hr class="hr" style="margin:18px 0">
+      <p class="dim">${A("Остальное мы почти не спрашивали. Это не значит, что не получится.","Остальное мы ещё почти не проверяли — это не про то, что у тебя не получится.")}</p>
+      <p class="muted" style="margin-top:10px">${A("Это не приговор. Это просто подсказка, с чего начать. Не понравится — попробуешь другое, так можно.","Это не приговор и не диагноз. Это подсказка, с чего начать пробовать. Если не понравится — поменяешь направление, это нормально.")}</p>
+      ${note("Раздел 6 ТЗ + этика","Формулировки не медицинские: «сильные стороны», а не «диагностика личности». Баллы ребёнку не показываем — цифру «3» он прочтёт как тройку в дневнике; и показываем только верхние направления, а не ранжир слабостей.")}
+    </div>
+    <div class="card pad">
+      <div class="pill acc">Кто это видит</div>
+      <p style="margin-top:10px">${A("Твои ответы видит только психолог. Остальные взрослые видят, какое занятие ты выбрал и как идёшь — и всё.","Твои ответы видит только психолог проекта. Преподаватель, куратор и воспитатель видят лишь то, какой курс ты выбрал и как идёшь по нему.")}</p>
+      <p class="muted" style="margin-top:10px">Есть одно исключение, и мы говорим о нём заранее: если психолог поймёт, что тебе угрожает опасность, он обязан подключить взрослых, которые могут помочь. В этом случае он сначала скажет об этом тебе.</p>
+      ${note("Инвариант проекта + честность","Обещать ребёнку абсолютную тайну нельзя: при признаках угрозы взрослые обязаны реагировать. Согласие должно быть информированным, поэтому исключение названо прямо и заранее, а не вскрывается в худший момент.")}
+    </div>
+    <h2>Что тебе стоит попробовать</h2>
+    <div class="grid2">
+      ${recs.map(c=>`<div class="card pad" style="box-shadow:none">
+        <div class="row" style="gap:6px"><span class="pill acc">${esc(TRACKS[c.track].name)}</span>
+        <span class="pill">${esc(c.age)}</span>
+        ${c.id==="c9"?`<span class="pill amb">Пригодится всем</span>`:""}</div>
+        <h3 style="margin-top:10px">${esc(c.title)}</h3>
+        <p class="dim" style="margin-top:6px">${esc(c.level)} · ${c.hours} ч · ${c.lessons} уроков</p>
+        <button class="btn ghost" data-act="pick" data-c="${c.id}" style="margin-top:12px">Открыть курс</button>
+      </div>`).join("")}
+    </div>
+    <div class="row"><button class="btn ghost" data-screen="catalog">Посмотреть весь каталог</button></div>
+  </div>`;
+};
+
+V.catalog = () => {
+  const top = S.psyDone ? topTrack() : null;
+  // Возрастная фильтрация: 16+ младшим не показывается вовсе — не «серым»,
+  // сама видимость такой карточки создаёт вопрос у опеки.
+  const list = COURSES.filter(c => !(young() && c.age === "16+"));
+  const hidden = COURSES.length - list.length;
+  return `<div class="stack">
+    <div class="eyebrow">Шаг 6 · ${A("Что можно попробовать","Каталог")}</div>
+    <h1>${A("Выбери, что попробовать","Курсы")}</h1>
+    ${top?`<p class="muted">${A("Сверху — то, что тебе ближе. Но открыть можно любое.","Сначала — то, что подходит тебе по профилю. Остальное тоже открыто: пробовать можно что угодно.")}</p>`:""}
+    ${young()?`<p class="muted">Начать можно с одного занятия. Оно короткое — если не пойдёт, просто возьмёшь другое.</p>`:""}
+    <div class="grid2">
+      ${list.slice().sort((a,b)=>((b.track===top)-(a.track===top))).map(c=>`
+        <div class="card pad" style="box-shadow:none">
+          <div class="row" style="gap:6px">
+            <span class="pill ${c.track===top?"acc":""}">${esc(TRACKS[c.track].name)}</span>
+            <span class="pill">${esc(c.age)}</span>
+            ${c.track===top?`<span class="pill good">Тебе подходит</span>`:""}
+            ${(c.id==="c1"||c.id==="c9")?`<span class="pill amb">урок + видео</span>`:""}
+          </div>
+          <h3 style="margin-top:10px">${esc(c.title)}</h3>
+          <p class="dim" style="margin-top:6px">${young()
+            ? `Первое занятие — минут 15`
+            : `${esc(c.level)} · ${c.hours} ч · ${c.lessons} уроков`}</p>
+          ${young()?"":`<p class="dim" style="margin-top:3px">Партнёр: ${esc(c.partner)}</p>`}
+          ${c.supervised?`<p class="dim" style="margin-top:3px">Практика — только вместе со взрослым</p>`:""}
+          <button class="btn ghost" data-act="pick" data-c="${c.id}" style="margin-top:12px">${A("Попробовать","Открыть")}</button>
+        </div>`).join("")}
+    </div>
+    ${note("Вопрос 6 заказчику","Каталог заполнен партнёрскими курсами, а не собственным продакшном. В ТЗ вопрос «откуда контент» не поднят вообще — а это часто дороже самой разработки.")}
+    ${note("436-ФЗ","Возрастная маркировка проставляется при загрузке курса, а не после. Курс без неё и без текстовой версии уроков не публикуется.")}
+    ${hidden?note("436-ФЗ · фильтрация","В регистре 12–14 курсы с маркировкой 16+ не отображаются вовсе. Скрыто карточек: "+hidden+". Возраст берётся из записи ключа, а не спрашивается у ребёнка."):""}
+    <p class="dim">Полные уроки с видео с Rutube развёрнуты в курсах «Взрослая жизнь: документы, жильё, деньги» и «Первый ремонт». Остальные карточки показывают формат каталога.</p>
+  </div>`;
+};
+
+V.lesson = () => {
+  const c = courseById(S.course) || COURSES[0];
+  const text = S.lessonMode === "text";
+  const isMoney = c.id === "c9";
+  const isRepair = c.id === "c1";
+  const isReal = isMoney || isRepair;
+  const videoSrc = isMoney
+    ? "https://rutube.ru/play/embed/f88a988f0c9edeb963bb68baa9c50698/"
+    : "https://rutube.ru/play/embed/122a37cabf763e345d597d84c5e5878b/";
+  const lessonTitle = isMoney
+    ? "Первые деньги, подработка и как не попасть на развод с картой"
+    : (isRepair ? "Отвёртка, бита и первый саморез" : "Пример урока");
+
+  return `<div class="stack">
+    <div class="eyebrow">Шаг 7 · ${esc(c.title)} · урок ${isMoney?1:3} из ${c.lessons}</div>
+    <h1>${lessonTitle}</h1>
+    ${!isReal ? `<div class="locked">
+      Полные уроки с видео развёрнуты в курсах <b>«Взрослая жизнь: документы, жильё, деньги»</b> и <b>«Первый ремонт: инструмент и безопасность»</b>.
+      Остальные курсы показаны витриной.
+      <br><br><b>Чтобы посмотреть согласованную связку курс → урок → аттестация → сертификат,
+      вернитесь в каталог и откройте «Взрослая жизнь» или «Первый ремонт».</b>
+    </div>` : ""}
+    <div class="row" style="justify-content:space-between">
+      <div class="seg">
+        <button data-act="mode" data-m="text" aria-pressed="${text}">Текстом</button>
+        <button data-act="mode" data-m="video" aria-pressed="${!text}">Видео</button>
+      </div>
+      <span class="pill ${text?"good":"warn"}">${text?"~200 КБ, откроется на любом канале":"Rutube плеер (без авторизации)"}</span>
+    </div>
+    <div class="card pad">
+      ${text ? (isMoney ? `<div class="lessonbody">
+        <p><b>1. «Сдай карту в аренду за 5 000 ₽» — это ловушка (дропперство).</b> Если знакомый или человек в мессенджере просит оформить карту на твоё имя или пропустить через твою карту чужой перевод за процент — через неё выводят краденые деньги. По закону (ст. 159 и 187 УК РФ) полиция приходит к владельцу карты, а банки блокируют все твои счета по 115-ФЗ вместе с подъёмными выплатами.</p>
+        <p><b>2. Первая подработка: только с договором или через «Мой налог».</b> Честная подработка в 16–18 лет (курьер, склад, сборка заказов, кафе) оформляется трудовым договором, договором ГПХ или через официальное приложение самозанятого «Мой налог». Если обещают «золотые горы без оформления» или просят сначала заплатить за обучение/форму — это обман.</p>
+        <p><b>3. «Безопасных счетов» не существует.</b> Ни банк, ни опека, ни полиция никогда не звонят с просьбой назвать код из СМС или перевести выплаты на «защищённый счёт». Услышал про код или перевод — сразу клади трубку.</p>
+        <p><b>4. Правило одного звонка.</b> Прежде чем подписать любую бумагу про деньги, кредит, доверенность или жильё — сначала позвони куратору или юристу фонда и покажи фото документа.</p>
+      </div>` : `<div class="lessonbody">
+        <p>Отвёртка держится не пальцами, а всей ладонью: усилие идёт вдоль оси, а не вбок. Если давить вбок, бита срывается и облизывает шлиц — саморез после этого выкрутить уже трудно.</p>
+        <p>Бита подбирается по шлицу, а не «примерно подходит». PH2 — самый частый размер для бытовых саморезов; PH1 в таком шлице будет болтаться и сорвёт крестовину с первого нажима.</p>
+        <p>Первый оборот делается медленно и с нажимом — саморез должен «поймать» материал. Дальше нажим уменьшают, иначе шляпка утонет и в гипсокартоне просто провернётся впустую.</p>
+        <p>В гипсокартон без дюбеля можно вешать только лёгкое: крючок, кабель-канал. Полка с книгами сорвёт саморез вместе с куском стены — для неё нужен дюбель-бабочка или попадание в профиль.</p>
+      </div>`) : `<div style="position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:var(--r); background:#000">
+        <iframe src="${videoSrc}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:0" allow="clipboard-write; autoplay; fullscreen" allowfullscreen></iframe>
+      </div>`}
+    </div>
+    <div class="card pad">
+      <div class="eyebrow">Домашнее задание</div>
+      <h3 style="margin-top:6px">${isMoney ? "Разбери ситуацию: знакомый просит перевести 20 000 ₽ через твою карту за 2 000 ₽" : "Закрути два самореза: один в дерево, один в гипсокартон с дюбелем"}</h3>
+      <p class="muted" style="margin-top:6px">${isMoney ? "Напиши коротко, почему соглашаться нельзя и что грозит владельцу карты. Проверит преподаватель, ответ придёт в течение суток." : "Практические задания выполняются только вместе со взрослым. Сфотографируй результат и напиши, что было сложнее. Проверит преподаватель, ответ придёт в течение суток."}</p>
+      ${S.hwSent
+        ? `<div class="row" style="margin-top:14px"><span class="pill good">Отправлено</span><span class="dim">Ждём проверку преподавателя</span></div>`
+        : `<div class="stack-sm" style="margin-top:14px">
+            <textarea rows="3" placeholder="${isMoney ? "Напиши свой ответ..." : "Что получилось, что было сложно"}" aria-label="Ответ на задание"></textarea>
+            ${S.photo?`<div class="row"><span class="pill good">фото прикреплено</span><span class="dim">макет вложения</span></div>`:""}
+            <div class="row"><button class="btn" data-act="hw">Отправить на проверку</button>
+            ${isMoney?"":`<button class="btn ghost" data-act="hwPhoto">Прикрепить фото</button>`}</div>
+          </div>`}
+    </div>
+    <div class="row"><button class="btn" data-screen="attestation">Перейти к аттестации</button></div>
+  </div>`;
+};
+
+V.attestation = () => {
+  const answered = Object.keys(S.attest).length;
+  if(S.attestDone){
+    const ok = S.attestScore>=3;
+    return `<div class="stack">
+      <div class="eyebrow">Шаг 8 · ${A("Проверь себя","Аттестация")}</div>
+      <h1>${ok?"Сдано":"Пока не сдано"}</h1>
+      <div class="card pad" style="border-color:${ok?"var(--good)":"var(--warn)"}">
+        <div class="row" style="gap:10px">
+          <span class="pill ${ok?"good":"warn"}">${S.attestScore} из ${getAttest().length}</span>
+          <span class="muted">${ok?"Проходной балл — 3. Сертификат доступен." : "Нужно минимум 3. Пересдача открыта сразу, попытки не ограничены."}</span>
+        </div>
+        <div class="stack-sm" style="margin-top:16px">
+          ${getAttest().map((q,i)=>{
+            const right = S.attest[i]===q.right;
+            return `<div class="row" style="align-items:flex-start; gap:9px">
+              <span class="pill ${right?"good":"crit"}">${right?"верно":"нет"}</span>
+              <div><div>${esc(q.q)}</div>
+              ${!right?`<div class="dim" style="margin-top:3px">Правильно: ${esc(q.a[q.right])}</div>`:""}</div>
+            </div>`;
+          }).join("")}
+        </div>
+      </div>
+      ${note("Усиление №12","Результат фиксируется строкой-фактом в момент сдачи: балл, дата, версия курса. Правка курса задним числом не переписывает уже выданные результаты и сертификаты.")}
+      <div class="row">
+        ${ok?`<button class="btn" data-screen="certificate">Получить сертификат</button>`:""}
+        <button class="btn ghost" data-act="attestReset">Пройти заново</button>
+      </div>
+    </div>`;
   }
-  if (e.target.id === "modeTextBtn") {
-    S.mode = "text"; save(); render(); return;
+  return `<div class="stack">
+    <div class="eyebrow">Шаг 8 · ${A("Проверь себя","Аттестация")}</div>
+    <h1>Проверим, что осталось в голове</h1>
+    <p class="muted">Пять вопросов. ${A("Не получилось — ничего страшного, можно сразу ещё раз","Не сдал — не страшно, пересдать можно сразу")}.</p>
+    <div class="bar"><i style="width:${Math.round(answered/getAttest().length*100)}%"></i></div>
+    ${getAttest().map((q,i)=>`
+      <div class="card pad">
+        <h3>${esc(q.q)}</h3>
+        <div class="stack-sm" style="margin-top:12px">
+          ${q.a.map((a,ai)=>`<button class="choice" data-act="attest" data-i="${i}" data-a="${ai}"
+            aria-pressed="${S.attest[i]===ai}"><span class="mark"></span><span>${esc(a)}</span></button>`).join("")}
+        </div>
+      </div>`).join("")}
+    <div class="row"><button class="btn" data-act="attestDone" ${answered<getAttest().length?"disabled":""}>Завершить</button>
+    <span class="dim">${answered} из ${getAttest().length}</span></div>
+  </div>`;
+};
+
+function qrSvg(seed){
+  const N=25; let h=0; for(let i=0;i<seed.length;i++) h=(h*31+seed.charCodeAt(i))>>>0;
+  let rects="";
+  const on=(x,y)=>{ h=(h*1103515245+12345)>>>0; return ((h>>>16)&1)===1; };
+  for(let y=0;y<N;y++) for(let x=0;x<N;x++){
+    const finder = (x<7&&y<7)||(x>N-8&&y<7)||(x<7&&y>N-8);
+    const fdraw = finder && !((x>1&&x<5&&y>1&&y<5)||(x>N-6&&x<N-2&&y>1&&y<5)||(x>1&&x<5&&y>N-6&&y<N-2))
+      ? ((x===0||x===6||y===0||y===6)||(x>N-8&&(x===N-7||x===N-1||y===0||y===6))||(y>N-8&&(y===N-7||y===N-1||x===0||x===6)))
+      : false;
+    const solid = finder ? (fdraw || (x>1&&x<5&&y>1&&y<5)||(x>N-6&&x<N-2&&y>1&&y<5)||(x>1&&x<5&&y>N-6&&y<N-2)) : on(x,y);
+    if(solid) rects+=`<rect x="${x}" y="${y}" width="1" height="1"/>`;
   }
-  if (e.target.id === "applyCustomVideoBtn") {
-    const v = document.getElementById("customVideoInput").value.trim();
-    if (v) { S.videoUrl = v; save(); render(); }
+  return `<svg viewBox="0 0 ${N} ${N}" width="104" height="104" role="img" aria-label="Демонстрационный код проверки" style="shape-rendering:crispEdges; fill:var(--ink)">${rects}</svg>`;
+}
+
+V.certificate = () => {
+  if(!(S.attestDone && S.attestScore>=3)) return `<div class="stack">
+    <h1>Сертификат пока не выдан</h1>
+    <p class="muted">Он появится после сдачи аттестации — нужно набрать минимум 3 из 5.</p>
+    <div class="row"><button class="btn" data-screen="attestation">К аттестации</button></div></div>`;
+  const c = courseById(S.course) || COURSES[0];
+  const num = "СД-2026-" + String(4821).padStart(6,"0");
+  return `<div class="stack">
+    <div class="eyebrow">Шаг 9 · ${A("Твой документ","Сертификат")}</div>
+    <h1>Это твой первый подтверждённый навык</h1>
+    <div class="cert">
+      <div class="eyebrow">Навигатор · образовательная программа</div>
+      <div class="name">${esc(S.name)}</div>
+      <p class="muted">прошёл курс и сдал аттестацию</p>
+      <h2 style="margin-top:14px">${esc(c.title)}</h2>
+      <div class="row" style="margin-top:18px; justify-content:space-between; align-items:flex-end">
+        <div class="stack-sm">
+          <div><div class="eyebrow">Результат</div><div class="tnum">${S.attestScore} из ${getAttest().length}</div></div>
+          <div><div class="eyebrow">Дата</div><div class="tnum">17.08.2026</div></div>
+          <div><div class="eyebrow">Номер</div><div class="tnum">${num}</div></div>
+        </div>
+        <div style="text-align:center">
+          ${qrSvg(num)}
+          <div class="dim" style="margin-top:4px; font-size:11px">в демо код нерабочий — это макет</div>
+        </div>
+      </div>
+    </div>
+    ${note("Раздел 12 ТЗ","Здесь нет сервера, поэтому проверка по коду не работает. В продукте код ведёт на страницу подтверждения без раскрытия персональных данных: сертификат не показывает ни учреждение, ни статус ребёнка.")}
+    ${note("Вопрос 11 заказчику","Образовательная деятельность лицензируется. Пока не решено, есть ли лицензия у фонда или у партнёров, называть это документом об образовании нельзя — отсюда осторожная формулировка ниже.")}
+    <div class="card pad">
+      <div class="pill acc">Что дальше</div>
+      <p style="margin-top:10px">${A("Это первый документ о том, что ты чему-то научился и довёл до конца. Он твой — его никто не заберёт. Дальше можно взять следующее занятие.","Сертификат подтверждает, что ты прошёл курс на платформе. Это не документ об образовании государственного образца — но его можно приложить к резюме как подтверждение навыка. Следующий курс по твоему направлению уже подобран.")}</p>
+      <div class="row" style="margin-top:12px">
+        <button class="btn" data-screen="catalog">Выбрать следующий курс</button>
+        <button class="btn ghost" data-screen="cabinet">В личный кабинет</button>
+      </div>
+    </div>
+  </div>`;
+};
+
+/* ---- Подготовка к выходу и первый год ----
+   Того, чего в ТЗ нет вовсе. Единица содержания здесь — не урок, а действие
+   с результатом на руках: пункт закрывается фактом, а не правильным ответом. */
+const EXIT_ITEMS = [
+  {k:"docs",  t:"Знаю, где лежат мои документы",     h:"И у меня есть их копии в двух разных местах"},
+  {k:"snils", t:"У меня есть СНИЛС и ИНН",           h:"Не «где-то оформляли», а я знаю номера и где бумаги"},
+  {k:"acct",  t:"У меня свой счёт в банке",          h:"Открыт на меня, и я знаю, как им пользоваться"},
+  {k:"house", t:"Знаю свой номер в списке на жильё", h:"И знаю, когда его проверять и у кого"},
+  {k:"appl",  t:"Я сам подал одно заявление",        h:"Любое. Важно один раз пройти это самому, пока рядом есть взрослый"},
+  {k:"call",  t:"Знаю, кому позвонить, если что",    h:"Конкретный человек и конкретный номер"}
+];
+
+V.exitprep = () => {
+  const done = EXIT_ITEMS.filter(i=>S.exit[i.k]).length;
+  return `<div class="stack">
+    <div class="eyebrow">Шаг 11 · Подготовка к выходу</div>
+    <h1>${grad()?"Что уже закрыто":"До выпуска — 8 месяцев"}</h1>
+    ${grad()?"":`<p class="muted" style="max-width:60ch">Это не курс и не тест. Это список дел, каждое
+      из которых нужно сделать один раз, пока рядом ещё есть взрослый, который поможет.
+      Отмечай, когда сделал по-настоящему.</p>`}
+    <div class="card pad">
+      <div class="row" style="justify-content:space-between">
+        <b>Личное дело</b><span class="tnum dim">${done} из ${EXIT_ITEMS.length}</span>
+      </div>
+      <div class="bar" style="margin-top:10px"><i style="width:${Math.round(done/EXIT_ITEMS.length*100)}%"></i></div>
+      <div class="stack-sm" style="margin-top:16px">
+        ${EXIT_ITEMS.map(i=>`
+          <button class="choice" data-act="exitToggle" data-k="${i.k}" aria-pressed="${!!S.exit[i.k]}">
+            <span class="mark"></span>
+            <span><b>${esc(i.t)}</b><br><span class="dim">${esc(i.h)}</span></span>
+          </button>`).join("")}
+      </div>
+      ${note("Чего нет в ТЗ","Продукт по ТЗ заканчивается сертификатом, а цель проекта — «адаптация ко взрослой жизни» — наступает после выпуска. Здесь единица содержания не урок, а действие с результатом: пункт закрывается фактом, а не правильным вариантом из трёх.")}
+    </div>
+    <div class="card pad" style="border-color:var(--accent)">
+      <div class="pill acc">Кому позвонить</div>
+      <p style="margin-top:10px">Один номер, который стоит запомнить: <b>наставник проекта</b> —
+        человек не из учреждения, который остаётся на связи и после того, как ты выйдешь.</p>
+      <p class="muted" style="margin-top:8px">Правило простое: <b>прежде чем подписать что-нибудь
+        про жильё, деньги или регистрацию — сначала позвони.</b> Одно правило запоминается,
+        десять запретов — нет.</p>
+      ${note("Усиление","Наставник — роль, отдельная от куратора учреждения: знакомство до выпуска, тот же контакт после. В первый год важнее человек, которому можно позвонить, чем ещё один навык.")}
+    </div>
+  </div>`;
+};
+
+V.aftergrad = () => `
+<div class="stack">
+  <div class="eyebrow">Шаг 12 · После выпуска</div>
+  <h1>Аккаунт остался твоим</h1>
+  <p class="muted" style="max-width:60ch">Тебе исполнилось 18, ты вышел из учреждения — и ничего
+    не пропало. Сертификаты, работы и контакты на месте. Согласие теперь твоё собственное,
+    его никто за тебя не подписывает.</p>
+  <div class="grid2">
+    <div class="card pad">
+      <div class="pill good">Работает</div>
+      <h3 style="margin-top:10px">Мои документы и работы</h3>
+      <p class="dim" style="margin-top:6px">Сертификаты и фотографии того, что ты делал руками —
+        одной страницей, которую можно показать работодателю. Она не раскрывает, что ты
+        из детского дома.</p>
+    </div>
+    <div class="card pad">
+      <div class="pill acc">Всегда доступно</div>
+      <h3 style="margin-top:10px">Кому позвонить</h3>
+      <p class="dim" style="margin-top:6px">Наставник, телефон доверия, опека. Эта страница
+        открывается <b>без входа в аккаунт</b> — в нужный момент своего телефона может
+        не оказаться под рукой.</p>
+    </div>
+  </div>
+  <div class="card pad" style="border-color:var(--warn)">
+    <div class="pill amb">Разговор, который стоит прочитать один раз</div>
+    <p style="margin-top:10px">Предлагать обычно будет не незнакомец, а кто-то знакомый
+      и приятный: «поживи пока у меня, оформим потом», «дай карту на пару дней».
+      Это не про наивность — просто раньше все бумаги за тебя подписывали другие.</p>
+    <p class="muted" style="margin-top:10px">Поэтому правило одно: <b>про жильё, деньги
+      и регистрацию — сначала звонок, потом подпись.</b></p>
+    ${note("Граница","Никакого скоринга и меток «в зоне риска» после 18 быть не должно. Человек, за которым наблюдают, перестаёт сообщать о проблемах — а сообщение и есть единственное, что здесь помогает.")}
+  </div>
+  ${note("Метрика, которой нет в ТЗ","Единственное измерение, отвечающее на вопрос «работает ли проект»: где выпускник через 12 месяцев — учится, работает, на связи. Платформа сама его не соберёт, нужен опрос через куратора.")}
+</div>`;
+
+V.cabinet = () => {
+  const c = courseById(S.course);
+  const hasCert = S.attestDone && S.attestScore>=3;
+  return `<div class="stack">
+    <div class="eyebrow">Шаг 10 · Личный кабинет</div>
+    <h1>Привет, ${esc(S.name)}</h1>
+    <div class="grid3">
+      <div class="tile"><div class="k">Пройдено уроков</div><div class="v">${S.hwSent?3:0}</div></div>
+      <div class="tile"><div class="k">Дней подряд</div><div class="v">${S.hwSent?5:0}</div></div>
+      <div class="tile"><div class="k">Сертификатов</div><div class="v">${hasCert?1:0}</div></div>
+    </div>
+    <div class="card pad">
+      <h3>Мой курс</h3>
+      ${c?`<div class="row" style="justify-content:space-between; margin-top:12px">
+        <div><div>${esc(c.title)}</div><div class="dim">${esc(TRACKS[c.track].name)} · ${c.lessons} уроков</div></div>
+        <button class="btn ghost" data-screen="lesson">Продолжить</button>
+      </div>
+      <div class="bar" style="margin-top:12px"><i style="width:${S.hwSent?33:11}%"></i></div>`
+      :`<p class="muted" style="margin-top:8px">Курс ещё не выбран.</p>
+        <button class="btn ghost" data-screen="catalog" style="margin-top:10px">Выбрать курс</button>`}
+    </div>
+    <div class="grid2">
+      <div class="card pad">
+        <h3>Ближайшее</h3>
+        <div class="stack-sm" style="margin-top:12px">
+          <div class="row" style="justify-content:space-between"><span>Занятие с преподавателем</span><span class="pill acc">завтра 16:00</span></div>
+          <div class="row" style="justify-content:space-between"><span>Разговор с психологом</span><span class="pill">пт 15:30</span></div>
+          <div class="row" style="justify-content:space-between"><span>Дедлайн по заданию</span><span class="pill warn">через 2 дня</span></div>
+        </div>
+      </div>
+      <div class="card pad">
+        <h3>Сообщения</h3>
+        <div class="stack-sm" style="margin-top:12px">
+          <div><b>Марина, куратор</b><div class="dim">Видела, что ты дошёл до третьего урока. Молодец, продолжай.</div></div>
+          <div><b>Игорь Петрович, преподаватель</b><div class="dim">Задание принял, по гипсокартону всё верно.</div></div>
+        </div>
+        ${note("Усиление №8","Чат с психологом не открыт намеренно: до появления регламента эскалации сигналов о неблагополучии этот канал открывать нельзя.")}
+      </div>
+    </div>
+    <div class="card pad">
+      <div class="row" style="justify-content:space-between">
+        <div><h3>Выйти из аккаунта</h3><p class="dim" style="margin-top:4px">Обязательно, если компьютер общий</p></div>
+        <button class="btn ghost" data-act="logout">Выйти</button>
+      </div>
+    </div>
+  </div>`;
+};
+
+/* ============ экраны: куратор ============ */
+V.curator = () => `
+<div class="stack">
+  <div class="eyebrow">Куратор · сопровождение</div>
+  <h1>Дети под сопровождением</h1>
+  <div class="row"><span class="demotag">демо-данные</span>
+  <span class="dim">Дети и учреждения вымышлены и обезличены.</span></div>
+  ${note("Обратный отсчёт","Самая важная переменная продукта — сколько месяцев осталось до выпуска, а не процент прохождения. Список отсортирован по ней. Для ребёнка с отметкой «4 мес» правильная задача куратора — не «напомнить про курс», а «из списка выхода закрыто 2 пункта из 6». В ТЗ дата рождения есть и не используется ни для чего.")}
+  ${note("Усиление №2","В ТЗ куратор помечен «опционально». Здесь это отдельное рабочее место: без взрослого, который замечает «ты не заходил 19 дней», доходимость подростков в учреждениях околонулевая.")}
+  <div class="grid3">
+    <div class="tile"><div class="k">Всего детей</div><div class="v">6</div></div>
+    <div class="tile"><div class="k">Идут в графике</div><div class="v" style="color:var(--good)">3</div></div>
+    <div class="tile"><div class="k">Нужно внимание</div><div class="v" style="color:var(--crit)">3</div></div>
+  </div>
+  <div class="card">
+    <div class="scroller"><table>
+      <thead><tr><th>Ребёнок</th><th>До выпуска</th><th>Выбранный курс</th><th>Прогресс</th><th>Последний вход</th><th>Что сделать</th></tr></thead>
+      <tbody>
+      ${KIDS.slice().sort((x,y)=>x.toExit-y.toExit).map(k=>`<tr>
+        <td><b>${esc(k.name)}</b><div class="dim">${esc(k.org)}</div></td>
+        <td>${k.toExit<=12
+          ? `<span class="pill crit tnum">${k.toExit} мес</span>`
+          : `<span class="tnum dim">${k.toExit} мес</span>`}</td>
+        <td class="dim">${esc((coursesFor(k.top)[0]||COURSES[0]).title)}</td>
+        <td style="min-width:120px"><div class="bar"><i style="width:${k.progress}%"></i></div>
+          <div class="tnum dim" style="margin-top:4px">${k.progress}%</div></td>
+        <td class="tnum">${esc(k.last)}</td>
+        <td>${k.risk==="lost"?`<span class="pill crit">Пропал — позвать лично</span>`
+          : k.risk==="warn"?`<span class="pill warn">Напомнить</span>`
+          : `<span class="pill good">Всё идёт</span>`}</td>
+      </tr>`).join("")}
+      </tbody>
+    </table></div>
+  </div>
+  <div class="card pad">
+    <div class="pill crit">Куратор не видит</div>
+    <p style="margin-top:10px">Ответы на вопросы о склонностях, переписку с психологом и психологический профиль. Куратор видит только факт активности и курс, который ребёнок выбрал сам — не результат теста.</p>
+    ${note("Инвариант проекта","Соблюдение этого разграничения — условие того, что дети отвечают честно. Проверяется на каждом ревью.")}
+  </div>
+</div>`;
+
+/* ============ экраны: психолог ============ */
+V.psy_list = () => `
+<div class="stack">
+  <div class="eyebrow">Психолог · сопровождение</div>
+  <h1>Список на сопровождении</h1>
+  <div class="row"><span class="demotag">демо-данные</span>
+  <span class="dim">Дети, учреждения и согласия вымышлены и обезличены.</span></div>
+  <div class="card">
+    <div class="scroller"><table>
+      <thead><tr><th>Ребёнок</th><th>Возраст</th><th>Учреждение</th><th>Ведущее направление</th><th>Согласие</th><th></th></tr></thead>
+      <tbody>
+      ${KIDS.map(k=>`<tr>
+        <td><b>${esc(k.name)}</b>${k.flag?` <span class="pill crit">просил о встрече</span>`:""}</td>
+        <td class="tnum">${esc(k.age)}</td>
+        <td class="dim">${esc(k.org)}</td>
+        <td>${esc(TRACKS[k.top].name)}</td>
+        <td>${k.consent==="есть"?`<span class="pill good">есть</span>`:`<span class="pill warn">${esc(k.consent)}</span>`}</td>
+        <td>${k.consent==="есть"
+          ? `<button class="btn ghost" data-act="openKid" data-k="${k.id}" style="padding:6px 12px; font-size:13px">Открыть</button>`
+          : `<span class="pill crit">закрыто</span>`}</td>
+      </tr>`).join("")}
+      </tbody>
+    </table></div>
+  </div>
+  ${note("Раздел 6 и 17 ТЗ","Столбец «Согласие» — привязка ключа к документу-основанию (усиление №7). У кого согласие истекает, карточка уже не открывается — правило показано, а не только продекларировано.")}
+  ${note("Законный представитель","Кто им является, определяется индивидуально: у части детей права родителей сохранены, у части обязанности опекуна исполняет организация. У ключа должен быть реквизит «тип представителя», иначе согласие подпишет не тот человек.")}
+</div>`;
+
+V.psy_kid = () => {
+  const k = KIDS.find(x=>x.id===S.psyKid) || KIDS[0];
+  const fake = {people:7,tech:9,sign:4,image:5,nature:3};
+  const vals = k.top==="tech"?fake:{...fake, [k.top]:9, tech:5};
+  const max = Math.max(...Object.values(vals));
+  return `<div class="stack">
+    <div class="eyebrow">Психолог · карточка</div>
+    <h1>${esc(k.name)}, ${esc(k.age)}</h1>
+    <div class="row"><span class="demotag">демо-данные</span><span class="pill">${esc(k.org)}</span>
+    ${k.consent==="есть"?`<span class="pill good">согласие есть</span>`:`<span class="pill warn">согласие: ${esc(k.consent)}</span>`}
+    ${k.flag?`<span class="pill crit">просил о встрече</span>`:""}</div>
+    <div class="grid2">
+      <div class="card pad">
+        <h3>Профиль склонностей</h3>
+        <div class="stack-sm" style="margin-top:14px">
+          ${Object.keys(vals).map(t=>`<div>
+            <div class="row" style="justify-content:space-between; margin-bottom:4px">
+              <span>${esc(TRACKS[t].name)}</span><span class="tnum dim">${vals[t]}</span></div>
+            <div class="bar"><i style="width:${Math.round(vals[t]/max*100)}%"></i></div>
+          </div>`).join("")}
+        </div>
+        <p class="dim" style="margin-top:14px">Демонстрационные значения. Формулировки заключения не содержат диагнозов — только описание склонностей.</p>
+      </div>
+      <div class="card pad">
+        <h3>Консультации</h3>
+        <div class="stack-sm" style="margin-top:12px">
+          <div class="row" style="justify-content:space-between"><span>Первая встреча</span><span class="pill">02.08.2026</span></div>
+          <div class="row" style="justify-content:space-between"><span>Следующая</span><span class="pill acc">пт 15:30</span></div>
+        </div>
+        <hr class="hr" style="margin:16px 0">
+        <div class="locked">
+          Запись видеоконсультаций отключена по умолчанию. Разговор психолога с ребёнком не сохраняется на сервере.
+        </div>
+        ${note("Усиление №5","Раздел 9 ТЗ предполагает «запись встреч». Записанный разговор психолога с ребёнком-сиротой — то, чего лучше не создавать вовсе, чем защищать.")}
+        <div class="row" style="margin-top:14px">
+          <button class="btn" disabled>Записать на встречу</button>
+          <button class="btn ghost" disabled>Написать куратору</button>
+        </div>
+        <p class="dim" style="margin-top:8px">Кнопки без действия — макет.</p>
+      </div>
+    </div>
+    ${k.flag?`<div class="card pad" style="border-color:var(--crit)">
+      <div class="pill crit">Требует реакции</div>
+      <h3 style="margin-top:10px">Пример: ребёнок попросил о встрече</h3>
+      <p class="muted" style="margin-top:6px">По регламенту эскалации: связаться в течение рабочего дня, зафиксировать факт обращения, при признаках угрозы — уведомить ответственное лицо организации.</p>
+      <p class="dim" style="margin-top:8px">Сценарий показан для демонстрации регламента, реального обращения за ним нет.</p>
+      ${note("Усиление №8","Регламент эскалации — процедура для людей, а не функция. Кто именно обязан сообщить и в какой срок, нужно установить до пилота и закрепить в договоре с учреждением. Продукт лишь гарантирует, что сигнал не потеряется и факт передачи зафиксирован.")}
+    </div>`:""}
+    <div class="row"><button class="btn ghost" data-screen="psy_list">← К списку</button></div>
+  </div>`;
+};
+
+/* ============ экраны: преподаватель ============ */
+V.teacher = () => `
+<div class="stack">
+  <div class="eyebrow">Преподаватель · курсы</div>
+  <h1>Мои курсы</h1>
+  <div class="grid2">
+    ${COURSES.filter(c=>c.track==="tech"||c.id==="c9").map(c=>`
+      <div class="card pad" style="box-shadow:none">
+        <h3>${esc(c.title)}</h3>
+        <p class="dim" style="margin-top:6px">${c.lessons} уроков · ${c.hours} ч · ${esc(c.level)}</p>
+        <div class="row" style="margin-top:12px">
+          <span class="pill good">${c.id==="c1"?"12":"5"} учеников</span>
+          <span class="pill ${c.id==="c1"?"warn":""}">${c.id==="c1"?"3 работы на проверке":"нет заданий"}</span>
+        </div>
+        <div class="row" style="margin-top:12px">
+          ${c.id==="c1"
+            ? `<button class="btn ghost" data-screen="teacher_check" style="padding:7px 14px; font-size:13px">Проверить работы</button>`
+            : `<button class="btn ghost" style="padding:7px 14px; font-size:13px" disabled>Нет работ на проверке</button>`}
+        </div>
+      </div>`).join("")}
+    <div class="card pad" style="box-shadow:none; border-style:dashed; display:grid; place-items:center; min-height:150px">
+      <div style="text-align:center">
+        <div class="dim">Загрузить новый курс</div>
+        <button class="btn ghost" style="margin-top:10px" disabled>Создать курс</button>
+        <div class="dim" style="margin-top:8px">макет</div>
+      </div>
+    </div>
+  </div>
+  <div class="card pad">
+    <div class="pill crit">Преподаватель не видит</div>
+    <p style="margin-top:10px">Психологический профиль, ответы на вопросы о склонностях, статус ребёнка и учреждение. Только имя, курс, задания и оценки.</p>
+    ${note("Раздел 3 и 17 ТЗ","В ТЗ роли перечислены, но их видимость данных не разведена. Это самая вероятная будущая претензия — разводить нужно до разработки.")}
+  </div>
+  ${note("Раздел 8 ТЗ","Обязательное требование к загрузке курса в продукте: текстовая версия каждого урока. Курс без неё не публикуется.")}
+</div>`;
+
+V.teacher_check = () => {
+  const works = [
+    {id:"w1", kid:"Ребёнок А (демо)", task:"Урок 3 · два самореза", note:"В гипсокартон вкрутил через дюбель, в дерево — сразу. Сложнее было не сорвать шлиц."},
+    {id:"w2", kid:"Ребёнок В (демо)", task:"Урок 2 · подбор биты",  note:"Взял PH1, бита проворачивалась. Потом поменял на PH2."},
+    {id:"w3", kid:"Ребёнок Е (демо)", task:"Урок 3 · два самореза", note:"Всё получилось с первого раза."}
+  ];
+  return `<div class="stack">
+    <div class="eyebrow">Преподаватель · проверка</div>
+    <h1>Работы на проверке</h1>
+    <div class="row"><span class="demotag">демо-данные</span>
+    <span class="dim">Все работы и имена вымышлены. Развёрнут один курс — «Первый ремонт».</span></div>
+    <div class="stack-sm">
+      ${works.map(w=>`<div class="card pad">
+        <div class="row" style="justify-content:space-between">
+          <div><b>${esc(w.kid)}</b> <span class="dim">· ${esc(w.task)}</span></div>
+          ${S.checked[w.id]?`<span class="pill good">Принято, ${S.checked[w.id]}/5</span>`:`<span class="pill warn">Ждёт</span>`}
+        </div>
+        <p class="muted" style="margin-top:10px">${esc(w.note)}</p>
+        <div class="videobox" style="aspect-ratio:auto; height:74px; margin-top:12px"><span class="dim">фото работы</span></div>
+        ${!S.checked[w.id]?`<div class="row" style="margin-top:12px">
+          ${[3,4,5].map(g=>`<button class="btn ghost" data-act="grade" data-w="${w.id}" data-g="${g}" style="padding:7px 15px; font-size:13px">${g}</button>`).join("")}
+          <span class="dim">поставить оценку</span>
+        </div>`:""}
+      </div>`).join("")}
+    </div>
+    ${note("Усиление №12","Оценка записывается строкой-фактом: кто, когда, за какую версию задания. Изменение курса не переписывает уже выставленные оценки.")}
+  </div>`;
+};
+
+/* ============ экраны: администратор ============ */
+V.admin_keys = () => `
+<div class="stack">
+  <div class="eyebrow">Администратор · доступ</div>
+  <h1>Ключи доступа</h1>
+  <div class="row"><span class="demotag">демо-данные</span>
+  <span class="dim">Учреждения, сотрудники и документы вымышлены и обезличены.</span></div>
+  ${note("Усиление №7","Каждый ключ привязан к документу-основанию — согласию законного представителя. Ключ без документа выдать нельзя, а истекающее согласие блокирует доступ автоматически.")}
+  ${note("Тип представителя","Он не всегда один и тот же: у части детей права родителей сохранены (тогда согласие даёт родитель), у части обязанности опекуна исполняет организация. Без этого реквизита согласие подпишет не тот человек — и данные окажутся обработаны без основания.")}
+  <div class="card">
+    <div class="scroller"><table>
+      <thead><tr><th>Ключ</th><th>Учреждение</th><th>Выдан</th><th>Кем</th><th>Законный представитель</th><th>Основание</th><th>Статус</th></tr></thead>
+      <tbody>
+      ${KEYS.map(k=>`<tr>
+        <td class="tnum">${esc(k.key)}</td>
+        <td>${esc(k.org)}</td>
+        <td class="tnum">${esc(k.issued)}</td>
+        <td class="dim">${esc(k.by)}</td>
+        <td>${k.rep==="не указан"?`<span class="pill crit">не указан</span>`:`<span class="dim">${esc(k.rep)}</span>`}</td>
+        <td>${k.doc==="—"?`<span class="pill crit">нет документа</span>`:`<span class="dim">${esc(k.doc)}</span>`}</td>
+        <td>${k.status==="активирован"?`<span class="pill good">активирован</span>`
+          :k.status==="не активирован"?`<span class="pill">не активирован</span>`
+          :`<span class="pill crit">заблокирован</span>`}</td>
+      </tr>`).join("")}
+      </tbody>
+    </table></div>
+  </div>
+  <div class="card pad" style="border-color:var(--crit)">
+    <div class="pill crit">Заблокировано системой</div>
+    <p style="margin-top:10px">Ключ <span class="tnum">ДЕМО-03-0330</span> заблокирован: нет документа-основания и не указан законный представитель. Выдача ключа без оформленного согласия невозможна — это не настройка, а правило.</p>
+    <p class="dim" style="margin-top:8px">Пример из демо, а не описание реального случая. Попробуйте войти этим ключом на экране ребёнка — система не пустит.</p>
+  </div>
+  <div class="row"><button class="btn" disabled>Выпустить ключи для учреждения</button>
+  <button class="btn ghost" disabled>Выгрузить журнал действий</button>
+  <span class="dim">кнопки без действия — макет</span></div>
+</div>`;
+
+V.admin_analytics = () => {
+  const orgs = [
+    {org:ORGS[0], n:24, started:19, cert:7},
+    {org:ORGS[1], n:31, started:22, cert:9},
+    {org:ORGS[2], n:7,  started:5,  cert:2},
+    {org:ORGS[3], n:4,  started:1,  cert:0}
+  ].sort((a,b)=>a.org.localeCompare(b.org,"ru"));
+  return `<div class="stack">
+    <div class="eyebrow">Администратор · аналитика</div>
+    <h1>Как идёт проект</h1>
+    <div class="row"><span class="demotag">демо-данные</span>
+    <span class="dim">Все числа вымышлены. Здесь будут ваши цифры после пилота.</span></div>
+    <div class="grid3">
+      <div class="tile"><div class="k">Детей с доступом</div><div class="v">66</div></div>
+      <div class="tile"><div class="k">Дошли до сертификата</div><div class="v">18</div><div class="dim tnum">27%</div></div>
+      <div class="tile"><div class="k">Вернулись на 7-й день</div><div class="v">41%</div></div>
+    </div>
+    ${note("Усиление №13","Метрик успеха в ТЗ нет ни одной. Здесь три, по которым реально видно, работает проект или нет: доходимость до сертификата, возврат на 7-й день, курсов на ребёнка.")}
+    <div class="card">
+      <div class="pad" style="padding-bottom:6px"><h3>По учреждениям</h3></div>
+      <div class="scroller"><table>
+        <thead><tr><th>Учреждение</th><th>Детей</th><th>Начали</th><th>Сертификат</th><th>Доходимость</th></tr></thead>
+        <tbody>
+        ${orgs.map(o=>{
+          const small = o.n < 10;
+          const tiny = o.n < 5;
+          return `<tr>
+            <td>${esc(o.org)}</td>
+            <td class="tnum">${tiny?"&lt;5":o.n}</td>
+            <td class="tnum">${tiny?"—":o.started}</td>
+            <td class="tnum">${tiny?"—":o.cert}</td>
+            <td>${tiny
+              ? `<span class="pill crit">не раскрывается</span>`
+              : small
+              ? `<span class="pill warn">мало данных</span>`
+              : `<div class="bar" style="min-width:90px"><i style="width:${Math.round(o.cert/o.n*100)}%"></i></div>
+                 <div class="tnum dim" style="margin-top:4px">${Math.round(o.cert/o.n*100)}%</div>`}</td>
+          </tr>`;
+        }).join("")}
+        </tbody>
+      </table></div>
+    </div>
+    <div class="card pad" style="border-color:var(--amber)">
+      <div class="pill amb">Защита от малых чисел</div>
+      <p style="margin-top:10px">Там, где детей меньше десяти, процент не показывается: «2 из 7» превратилось бы в «29%» и читалось бы как измеренная величина.</p>
+      <p style="margin-top:10px">Там, где их меньше пяти, скрываются и абсолютные числа: в учреждении на четверых строка «начал 1, сертификатов 0» указывает на конкретных детей — любой сотрудник понимает, о ком речь.</p>
+      ${note("Усиление №11","Малые числа — не только статистическая, но и приватностная проблема: по агрегату из маленького учреждения ребёнок восстанавливается. Названия учреждений во внешнем представлении обезличены, сортировка по алфавиту, а не по результату — чтобы дашборд не превращался в таблицу лидеров, где проигрывают конкретные дети.")}
+    </div>
+    <div class="card pad">
+      <h3>Чего в этих цифрах нет</h3>
+      <p class="muted" style="margin-top:8px">Трудоустройства и поступления после выпуска — главного, ради чего проект существует. Эти данные платформа сама собрать не может: нужен опрос выпускников через год.</p>
+      <p class="muted" style="margin-top:10px">И ещё одно: низкие цифры у учреждения — чаще всего вопрос доступа к технике и наличия куратора, а не отношения детей.</p>
+      ${note("Честность (§10)","Слепая зона названа прямо, а не спрятана. Дашборд, который выглядит полным, но не меряет цель проекта, вводит в заблуждение сильнее, чем отсутствие дашборда.")}
+    </div>
+  </div>`;
+};
+
+V.admin_users = () => `
+<div class="stack">
+  <div class="eyebrow">Администратор · роли</div>
+  <h1>Кто что видит</h1>
+  <p class="muted" style="max-width:62ch">Матрица доступа — не настройка интерфейса, а главный инвариант продукта. Любое изменение здесь проходит отдельное ревью.</p>
+  <div class="card"><div class="scroller"><table>
+    <thead><tr><th>Данные</th><th>Ребёнок</th><th>Куратор</th><th>Психолог</th><th>Преподаватель</th><th>Админ</th></tr></thead>
+    <tbody>
+      ${[
+        ["Ответы теста склонностей", 1,0,1,0,0],
+        ["Психологический профиль",  1,0,1,0,0],
+        ["Переписка с психологом",   1,0,1,0,0],
+        ["Выбранный курс и прогресс",1,1,1,1,1],
+        ["Оценки за задания",        1,1,0,1,1],
+        ["Учреждение и статус",      1,1,1,0,1],
+        ["Журнал действий",          0,0,0,0,1]
+      ].map(r=>`<tr><td>${esc(r[0])}</td>${r.slice(1).map(v=>
+        `<td>${v?`<span class="pill good">видит</span>`:`<span class="pill crit">нет</span>`}</td>`).join("")}</tr>`).join("")}
+    </tbody>
+  </table></div></div>
+  ${note("Инвариант проекта","В ТЗ (раздел 3) роли перечислены, но их права не разведены. Эта таблица — то, что должно попасть в договор с подрядчиком дословно.")}
+  <div class="card pad">
+    <h3>Журнал действий</h3>
+    <div class="stack-sm" style="margin-top:12px">
+      ${[
+        ["17.08 14:02","Психолог открыл карточку «Ребёнок Г (демо)»"],
+        ["17.08 13:41","Администратор выпустил 4 ключа для «Учреждение Б (демо)»"],
+        ["17.08 11:20","Ключ ДЕМО-03-0330 заблокирован: нет документа-основания"],
+        ["16.08 18:55","Куратор отправил напоминание 3 детям"]
+      ].map(l=>`<div class="row" style="gap:12px"><span class="tnum dim">${esc(l[0])}</span><span>${esc(l[1])}</span></div>`).join("")}
+    </div>
+  </div>
+</div>`;
+
+/* ============ роутер ============ */
+let gateMsg = null;
+function focusKey(el){
+  if(!el || !el.dataset || !el.dataset.act) return null;
+  const d = el.dataset;
+  return `[data-act="${d.act}"]` +
+    (d.i!=null?`[data-i="${d.i}"]`:"") + (d.q!=null?`[data-q="${d.q}"]`:"") +
+    (d.a!=null?`[data-a="${d.a}"]`:"") + (d.v!=null?`[data-v="${d.v}"]`:"") +
+    (d.m!=null?`[data-m="${d.m}"]`:"") + (d.w!=null?`[data-w="${d.w}"]`:"") +
+    (d.k!=null?`[data-k="${d.k}"]`:"") + (d.c!=null?`[data-c="${d.c}"]`:"");
+}
+function render(){
+  if(S.role !== "child" && !OTHER[S.role]) S.role = "child";
+  if(!S.loggedIn && S.screen !== "login"){
+    const step = JOURNEY_ALL.find(j => j[0] === S.screen);
+    gateMsg = step ? jlabel(step) : null;
+    S.screen = "login";
+  }
+  const canvas = document.getElementById("canvas");
+  const rail = document.getElementById("rail");
+  const active = document.activeElement;
+  const keep = canvas.contains(active) ? focusKey(active) : null;
+  const keepRail = rail.contains(active) && active.dataset && active.dataset.screen
+    ? `[data-screen="${active.dataset.screen}"]` : null;
+  const fn = V[S.screen] || V.login;
+  canvas.innerHTML = fn();
+  gateMsg = null;
+  if(keep){ const back = canvas.querySelector(keep); if(back) back.focus({preventScroll:true}); }
+  renderRail();
+  if(keepRail){ const b = rail.querySelector(keepRail); if(b) b.focus({preventScroll:true}); }
+  const who = document.getElementById("who");
+  who.hidden = !S.loggedIn;
+  if(S.loggedIn){
+    document.getElementById("whoName").textContent = S.name;
+    document.getElementById("whoRole").textContent = S.roleTitle || "";
+  }
+  document.documentElement.setAttribute("data-theme", S.theme);
+  document.getElementById("themeBtn").textContent =
+    S.theme === "dark" ? "Светлая тема" : "Тёмная тема";
+  document.body.classList.toggle("young", young() && S.role === "child");
+  save();
+}
+function go(screen){ S.screen = screen; window.scrollTo({top:0,behavior:"instant"}); render(); }
+
+/* ============ события ============ */
+document.addEventListener("click", e => {
+  const scr = e.target.closest("[data-screen]");
+  if(scr) return go(scr.dataset.screen);
+
+  const el = e.target.closest("[data-act]");
+  if(!el) return;
+  const a = el.dataset.act;
+
+  if(a==="login"){
+    const key = (document.getElementById("keyInput").value||"").trim().toUpperCase();
+    const nm = (document.getElementById("nameInput").value||"").trim();
+    const rec = KEYS.find(k => k.key.toUpperCase() === key);
+    const err = document.getElementById("keyErr");
+    if(!rec){
+      err.innerHTML = `<div class="locked">Такого ключа нет в реестре. Ключ выдаёт куратор вместе с оформленным согласием.</div>`;
+      return;
+    }
+    if(rec.status === "заблокирован"){
+      err.innerHTML = `<div class="locked">Ключ заблокирован: к нему не приложен документ-основание. Обратись к куратору — без согласия законного представителя доступ не открывается.</div>`;
+      return;
+    }
+    S.loggedIn = true; S.role = "child"; S.roleTitle = "Ученик";
+    S.org = rec.org; S.ageBand = rec.age;
+    if(nm) S.name = nm;
+    return go(rec.age === "grad" ? "aftergrad" : "insight");
+  }
+  if(a==="logout"){
+    const keepTheme = S.theme;
+    S = JSON.parse(JSON.stringify(BLANK));
+    S.theme = keepTheme;
+    return go("login");
+  }
+  if(a==="quick"){ S.quick[el.dataset.q]=+el.dataset.a; return render(); }
+  if(a==="quickDone"){ S.quickDone=true; return render(); }
+  if(a==="quickReset"){ S.quick={}; S.quickDone=false; return render(); }
+  if(a==="anketaField"){ return; }
+  if(a==="anketaNext"){
+    if(S.anketaStep===anketaSteps().length-1){ S.anketaDone=true; } else { S.anketaStep++; }
+    return render();
+  }
+  if(a==="anketaBack"){ S.anketaStep=Math.max(0,S.anketaStep-1); return render(); }
+  if(a==="anketaReset"){ S.anketa={}; S.anketaStep=0; S.anketaDone=false; return render(); }
+  if(a==="psy"){ S.psy[el.dataset.i]=+el.dataset.v; return render(); }
+  if(a==="psyDone"){ S.psyDone=true; return go("profile"); }
+  if(a==="loginTab"){ S.loginTab = el.dataset.tab; return render(); }
+  if(a==="fillKey"){
+    const ki = document.getElementById("keyInput");
+    const ni = document.getElementById("nameInput");
+    if(ki) ki.value = el.dataset.key;
+    if(ni && el.dataset.name) ni.value = el.dataset.name;
     return;
   }
-  if (e.target.closest("#scenarioBad")) {
-    S.scenarioAnswer = "bad"; save(); render(); return;
-  }
-  if (e.target.closest("#scenarioGood")) {
-    S.scenarioAnswer = "good"; save(); render(); return;
-  }
-
-  // Ответ на вопрос теста
-  const testBtn = e.target.closest("[data-q]");
-  if (testBtn && !S.testSubmitted) {
-    const q = +testBtn.dataset.q;
-    const a = +testBtn.dataset.a;
-    S.testAnswers[q] = a;
-    save(); render(); return;
-  }
-
-  if (e.target.id === "submitTestBtn") {
-    let score = 0;
-    TEST_QUESTIONS.forEach((q, i) => {
-      if (S.testAnswers[i] === q.right) score++;
-    });
-    S.testSubmitted = true;
-    S.testScore = score;
-    save(); render(); return;
-  }
-
-  if (e.target.id === "retryTestBtn") {
-    S.testAnswers = {};
-    S.testSubmitted = false;
-    S.testScore = 0;
-    save(); render(); return;
-  }
-
-  // Зов взрослого
-  if (e.target.id === "askAdultBtn") {
-    document.getElementById("helpModal").hidden = false;
+  if(a==="fillStaff"){
+    const li = document.getElementById("loginInput");
+    const pi = document.getElementById("passInput");
+    if(li) li.value = el.dataset.login;
+    if(pi) pi.value = "demo";
+    const btn = document.querySelector("button[data-act='loginStaff']");
+    if(btn) btn.click();
     return;
   }
-  if (e.target.id === "helpCancelBtn") {
-    document.getElementById("helpModal").hidden = true;
-    return;
+  if(a==="loginStaff"){
+    const lg = (document.getElementById("loginInput").value||"").trim().toLowerCase();
+    const pw = (document.getElementById("passInput").value||"").trim();
+    const acc = STAFF.find(x => x.login === lg && x.pass === pw);
+    if(!acc){
+      document.getElementById("keyErr").innerHTML =
+        `<div class="locked">Неверный логин или пароль.</div>`;
+      return;
+    }
+    S.loggedIn = true; S.role = acc.role; S.name = acc.name; S.roleTitle = acc.title;
+    return go(OTHER[acc.role][0][0]);
   }
-  if (e.target.id === "helpSendBtn") {
-    const comment = document.getElementById("helpComment").value.trim();
-    const alertData = {
-      kidName: S.name + " К.",
-      age: S.age + " лет",
-      time: new Date().toLocaleTimeString("ru-RU", {hour:'2-digit', minute:'2-digit'}),
-      text: comment || "Предлагают сомнительную подработку или просят карту, хочу посоветоваться.",
-      status: "new"
-    };
-    try {
-      localStorage.setItem("navigator_staff_alert", JSON.stringify(alertData));
-    } catch(err) {}
-    document.getElementById("helpModal").hidden = true;
-    alert("Сигнал отправлен психологу! Он свяжется с тобой в учреждении в ближайшее время.");
+  if(a==="psyReset"){ S.psy={}; S.psyDone=false; return render(); }
+  if(a==="exitToggle"){ const k=el.dataset.k; S.exit[k] = !S.exit[k]; return render(); }
+  if(a==="pick"){ S.course=el.dataset.c; return go("lesson"); }
+  if(a==="mode"){ S.lessonMode=el.dataset.m; return render(); }
+  if(a==="hw"){ S.hwSent=true; return render(); }
+  if(a==="hwPhoto"){ S.photo=true; return render(); }
+  if(a==="attest"){ S.attest[el.dataset.i]=+el.dataset.a; return render(); }
+  if(a==="attestDone"){
+    S.attestDone=true;
+    S.attestScore=getAttest().reduce((n,q,i)=>n+(S.attest[i]===q.right?1:0),0);
+    return render();
   }
+  if(a==="attestReset"){ S.attest={}; S.attestDone=false; S.attestScore=0; return render(); }
+  if(a==="openKid"){ S.psyKid=el.dataset.k; return go("psy_kid"); }
+  if(a==="grade"){ S.checked[el.dataset.w]=+el.dataset.g; return render(); }
+});
+
+
+document.addEventListener("submit", e => {
+  if(e.target.closest("[data-act='loginForm']")){
+    e.preventDefault();
+    const b = document.querySelector("button[data-act='loginStaff']")
+           || document.querySelector("button[data-act='login']");
+    if(b) b.click();
+  }
+});
+
+document.addEventListener("change", e => {
+  const sel = e.target.closest("[data-act='anketaField']");
+  if(sel){ S.anketa[sel.dataset.k]=sel.value; render(); }
+});
+
+
+
+document.documentElement.lang = "ru";
+document.getElementById("rail").setAttribute("aria-label","Разделы");
+document.getElementById("themeBtn").addEventListener("click", () => {
+  S.theme = S.theme === "dark" ? "light" : "dark"; render();
 });
 
 render();
 </script>
-</body>
-</html>

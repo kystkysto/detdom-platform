@@ -7,12 +7,12 @@
   --ground:#EEF2F4; --surface:#FFFFFF; --surface-2:#F6F9FA; --sunk:#E4EAEE;
   --line:#D4DDE2; --line-soft:#E5ECEF;
   --ink:#101A20; --ink-2:#3F515B; --ink-3:#5B6E77;
-  --accent:#12586E; --accent-2:#1B7A96; --accent-soft:#DBEAEF; --accent-ink:#0B3E4E;
+  --accent:#4C5FD7; --accent-2:#6B7BE8; --accent-soft:#E6E9FB; --accent-ink:#39479F;
   --amber:#8A5A12; --amber-soft:#F6EAD5;
-  --good:#2A6B50; --good-soft:#DCECE3;
+  --good:#1F7A52; --good-soft:#DEF2E6;
   --warn:#8F5D10; --warn-soft:#F6EBD6;
   --crit:#9A3126; --crit-soft:#F6DFDB;
-  --hero-a:#12586E; --hero-b:#082F3D; --hero-ink:#F2FAFC; --hero-ink-2:#C5E0E9; --hero-eyebrow:#A8D3E2;
+  --hero-a:#4C5FD7; --hero-b:#2B3690; --hero-ink:#F7F8FF; --hero-ink-2:#D2D8FA; --hero-eyebrow:#E9ECFD;
   --btn-ink:#FFFFFF;
   --shadow:0 1px 2px rgba(16,26,32,.05), 0 10px 28px -16px rgba(16,26,32,.28);
   --shadow-lift:0 2px 4px rgba(16,26,32,.06), 0 18px 40px -20px rgba(16,26,32,.35);
@@ -26,13 +26,13 @@
     --ground:#0D1317; --surface:#151E23; --surface-2:#1A252B; --sunk:#101A1F;
     --line:#2A383F; --line-soft:#212F36;
     --ink:#E3EAEE; --ink-2:#A6B9C2; --ink-3:#7C919D;
-    --accent:#5FB2CC; --accent-2:#7FC7DD; --accent-soft:#14323D; --accent-ink:#A8D9E7;
+    --accent:#9AA6F5; --accent-2:#B4BDF9; --accent-soft:#262E60; --accent-ink:#C6CCFB;
     --amber:#D9A45E; --amber-soft:#34280F;
-    --good:#5DB78C; --good-soft:#153027;
+    --good:#5FC494; --good-soft:#163227;
     --warn:#CE9E52; --warn-soft:#332711;
     --crit:#DF8073; --crit-soft:#371C18;
-    --hero-a:#0E4B60; --hero-b:#06232E; --hero-ink:#F2FAFC; --hero-ink-2:#C5E0E9; --hero-eyebrow:#9BCADD;
-    --btn-ink:#06222C;
+    --hero-a:#3B49B8; --hero-b:#1D2568; --hero-ink:#F7F8FF; --hero-ink-2:#D2D8FA; --hero-eyebrow:#E9ECFD;
+    --btn-ink:#141A45;
     --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 28px -16px rgba(0,0,0,.7);
     --shadow-lift:0 2px 4px rgba(0,0,0,.45), 0 18px 40px -20px rgba(0,0,0,.8);
   }
@@ -41,13 +41,13 @@
   --ground:#0D1317; --surface:#151E23; --surface-2:#1A252B; --sunk:#101A1F;
   --line:#2A383F; --line-soft:#212F36;
   --ink:#E3EAEE; --ink-2:#A6B9C2; --ink-3:#7C919D;
-  --accent:#5FB2CC; --accent-2:#7FC7DD; --accent-soft:#14323D; --accent-ink:#A8D9E7;
+  --accent:#9AA6F5; --accent-2:#B4BDF9; --accent-soft:#262E60; --accent-ink:#C6CCFB;
   --amber:#D9A45E; --amber-soft:#34280F;
-  --good:#5DB78C; --good-soft:#153027;
+  --good:#5FC494; --good-soft:#163227;
   --warn:#CE9E52; --warn-soft:#332711;
   --crit:#DF8073; --crit-soft:#371C18;
-  --hero-a:#0E4B60; --hero-b:#06232E; --hero-ink:#F2FAFC; --hero-ink-2:#C5E0E9; --hero-eyebrow:#9BCADD;
-  --btn-ink:#06222C;
+  --hero-a:#3B49B8; --hero-b:#1D2568; --hero-ink:#F7F8FF; --hero-ink-2:#D2D8FA; --hero-eyebrow:#E9ECFD;
+  --btn-ink:#141A45;
   --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 28px -16px rgba(0,0,0,.7);
   --shadow-lift:0 2px 4px rgba(0,0,0,.45), 0 18px 40px -20px rgba(0,0,0,.8);
 }
@@ -73,13 +73,37 @@ button{font:inherit; color:inherit}
 }
 
 /* ---------- demo shell ---------- */
-.demobar{
+.appbar{
   position:sticky; top:0; z-index:40; background:var(--surface);
   border-bottom:1px solid var(--line);
-  display:flex; align-items:center; gap:10px; flex-wrap:wrap;
-  padding:8px 16px; row-gap:8px;
+  display:flex; align-items:center; gap:12px; padding:10px 20px;
 }
-.brand{display:flex; align-items:baseline; gap:9px; margin-right:auto}
+.who{display:flex; align-items:center; gap:12px; margin-left:auto}
+.who[hidden]{display:none}   /* display:flex иначе перебивает атрибут hidden */
+.appbar #themeBtn{margin-left:auto}
+.who ~ #themeBtn{margin-left:0}
+.whoname{font-weight:600; font-size:14px}
+.whorole{
+  font-family:var(--font-mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--accent); background:var(--accent-soft); padding:3px 9px; border-radius:100px;
+}
+.shell.norail{grid-template-columns:minmax(0,1fr)}
+.shell.norail .rail{display:none}
+/* Экран входа — единственный, где нет рельса: центрируем по обеим осям */
+.shell.norail .canvas{
+  max-width:none; width:100%; min-height:calc(100vh - 57px);
+  display:flex; align-items:center; justify-content:center;
+  padding:40px 20px 60px;
+}
+.shell.norail .canvas > *{width:100%}
+.demoacc{box-shadow:none; background:var(--surface-2)}
+.demoacc summary{cursor:pointer; font-size:13px; color:var(--ink-3); list-style:none}
+.demoacc summary::-webkit-details-marker{display:none}
+.demoacc summary::before{content:"▸ "}
+.demoacc[open] summary::before{content:"▾ "}
+.acclist{margin:6px 0 0; padding-left:18px; font-size:13.5px; color:var(--ink-2)}
+.acclist li{margin-bottom:3px}
+.brand{display:flex; align-items:baseline; gap:9px}
 .brand b{font-family:var(--font-display); font-size:17px; font-weight:600; letter-spacing:-.01em}
 .brand .tag{
   font-family:var(--font-mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase;
@@ -103,22 +127,11 @@ button{font:inherit; color:inherit}
 .toolbtn:hover{border-color:var(--accent); color:var(--accent)}
 .toolbtn[aria-pressed="true"]{background:var(--amber-soft); border-color:var(--amber); color:var(--amber); font-weight:600}
 
-.disclaimer{
-  position:sticky; top:var(--barh,57px); z-index:39;
-  background:var(--warn-soft); color:var(--warn); border-bottom:1px solid var(--line-soft);
-  padding:7px 20px; font-size:12.5px; display:flex; gap:8px; align-items:baseline; flex-wrap:wrap;
-}
-.demotag{
-  display:inline-flex; align-items:center; gap:5px; padding:2px 9px; border-radius:100px;
-  font-family:var(--font-mono); font-size:10px; letter-spacing:.11em; text-transform:uppercase;
-  background:var(--warn-soft); color:var(--warn); border:1px solid var(--warn); white-space:nowrap;
-}
-.disclaimer b{font-weight:700}
 
 .shell{display:grid; grid-template-columns:264px minmax(0,1fr); gap:0; align-items:start}
 .rail{
-  position:sticky; top:var(--stickh,88px); align-self:start; padding:22px 16px 40px; min-width:0;
-  border-right:1px solid var(--line); min-height:calc(100vh - var(--stickh,88px));
+  position:sticky; top:57px; align-self:start; padding:22px 16px 40px; min-width:0;
+  border-right:1px solid var(--line); min-height:calc(100vh - 57px);
 }
 .rail h4{margin:0 0 10px 4px; font:inherit}
 .railgroup + .railgroup{margin-top:22px}
@@ -139,18 +152,6 @@ button{font:inherit; color:inherit}
 .dot{flex:0 0 20px; display:grid; place-items:center; color:var(--ink-3); font-size:11px}
 
 .canvas{padding:26px 30px 80px; max-width:1000px}
-/* На узких экранах шапка переносится в 3–4 ряда и вместе с полосой съедает
-   почти весь экран. Там она просто уезжает со скроллом — контенту нужна высота. */
-@media (max-width:900px){
-  .demobar{position:static; flex-wrap:nowrap; overflow-x:auto; scrollbar-width:none;
-    align-items:center; padding:7px 12px}
-  .demobar::-webkit-scrollbar{display:none}
-  .demobar .brand{margin-right:6px; flex:0 0 auto}
-  .demobar .roles{flex:0 0 auto}
-  .disclaimer{position:static}
-  .disclaimer .long{display:none}
-  .rail{top:0 !important; min-height:0 !important}
-}
 @media (max-width:860px){
   .shell{grid-template-columns:minmax(0,1fr)}
   .rail{position:static; min-height:0; border-right:0; border-bottom:1px solid var(--line); padding:14px 16px}
@@ -299,20 +300,15 @@ body.young .dim{font-size:14.5px}
 }
 </style>
 
-<div class="demobar">
+<header class="appbar">
   <div class="brand"><b>Навигатор</b><span class="tag">демо</span></div>
-  <div class="roles" id="roles"></div>
-  <span class="agesw" id="ageSw" role="group" aria-label="Возрастной регистр интерфейса">
-    <button class="toolbtn" data-age="young">12–14</button><button class="toolbtn" data-age="teen">15–18</button><button class="toolbtn" data-age="grad">18+</button>
-  </span>
-  <button class="toolbtn" id="notesBtn" aria-pressed="false">Проектные решения</button>
-  <button class="toolbtn" id="resetBtn">Сбросить демо</button>
-  <button class="toolbtn" data-act="logout" id="logoutBtn" hidden>Выйти</button>
-</div>
-<div class="disclaimer">
-  <b>Демонстрация.</b>
-  <span>Все имена, учреждения, результаты и цифры вымышлены.<span class="long"> Эта версия работает без сервера: ничего не отправляется и не сохраняется за пределами вкладки браузера. Пожалуйста, не вводите сюда настоящие имена и данные.</span></span>
-</div>
+  <div class="who" id="who" hidden>
+    <span class="whoname" id="whoName"></span>
+    <span class="whorole" id="whoRole"></span>
+    <button class="toolbtn" data-act="logout">Выйти</button>
+  </div>
+  <button class="toolbtn" id="themeBtn">Тёмная тема</button>
+</header>
 
 <div class="shell">
   <aside class="rail" id="rail"></aside>
@@ -385,7 +381,6 @@ const LIKERT = [
 ];
 
 const COURSES = [
-  {id:"c0", title:"Первые деньги: как не дать себя развести", track:"people", level:"С нуля · 16–18 лет", age:"16+", hours:4, lessons:4, partner:"Проект «Навигатор»", isFeatured:true},
   {id:"c1", title:"Первый ремонт: инструмент и безопасность", track:"tech", level:"С нуля", age:"14+", hours:12, lessons:9, partner:"Колледж-партнёр, волонтёры", supervised:true},
   {id:"c2", title:"Электрика в быту: как не бояться щитка", track:"tech", level:"Базовый", age:"16+", hours:16, lessons:12, partner:"Колледж-партнёр", supervised:true},
   {id:"c3", title:"Excel и таблицы для жизни и работы", track:"sign", level:"С нуля", age:"12+", hours:10, lessons:8, partner:"Онлайн-школа-партнёр"},
@@ -397,12 +392,6 @@ const COURSES = [
   {id:"c9", title:"Взрослая жизнь: документы, жильё, деньги", track:"people", level:"Советуем всем", age:"14+", hours:12, lessons:10, partner:"Юристы фонда"}
 ];
 
-const ATTEST_MONEY = [
-  {q:"Знакомый в соцсети предлагает 5 000 руб за то, чтобы оформить карту на твоё имя и отдать ему. Что это?", a:["Легкая подработка без усилий","Дропперство — уголовная статья 159 УК РФ, все долги и полиция придут к тебе","Обычная банковская операция"], right:1},
-  {q:"Работодатель говорит: «Поработай месяц без договора, посмотрим как справляешься, потом оформим». Что делать?", a:["Согласиться, чтобы не упустить шанс","Попросить договор ГПХ, самозанятость или отказаться: велик риск остаться без оплаты","Начать работу, но не выходить на смены"], right:1},
-  {q:"Вам звонят и говорят: «С вашего счета списываются выплаты, срочно переведите их на безопасный счет ЦБ».", a:["Срочно назвать код из СМС","Немедленно сбросить звонок: безопасных счетов не бывает, это мошенники","Пойти к ближайшему банкомату"], right:1}
-];
-
 const ATTEST_REPAIR = [
   {q:"Перед работой с электроинструментом нужно:", a:["Сразу начать, если инструмент знакомый","Проверить кабель, крепление насадки и убрать лишнее со стола","Позвать кого-нибудь смотреть"], right:1},
   {q:"Отвёртка с изолированной ручкой нужна, чтобы:", a:["Было удобнее держать","Снизить риск удара током при работе рядом с проводкой","Она была красивее"], right:1},
@@ -411,10 +400,18 @@ const ATTEST_REPAIR = [
   {q:"Саморез в гипсокартон без дюбеля держит:", a:["Любую полку","Только лёгкое, тяжёлое сорвётся","Ничего не держит"], right:1}
 ];
 
-function currentAttest(){
-  return (S.course === "c0" || !S.course) ? ATTEST_MONEY : ATTEST_REPAIR;
+const ATTEST_MONEY = [
+  {q:"Знакомый предлагает 5 000 ₽ за то, чтобы оформить банковскую карту на твоё имя и отдать ему. Что это?", a:["Лёгкая подработка без усилий","Дропперство (ст. 159 и 187 УК РФ) — все украденные деньги и полиция придут к владельцу карты","Обычная банковская услуга"], right:1},
+  {q:"Работодатель на первой подработке говорит: «Поработай две недели без договора, посмотрим на тебя, потом оформим».", a:["Согласиться без вопросов","Попросить трудовой договор, ГПХ или оформление самозанятости — иначе велик риск остаться без оплаты","Отдать ему оригинал паспорта в залог"], right:1},
+  {q:"Тебе звонят и говорят: «С вашего счёта пытаются списать подъёмные выплаты, срочно назовите код из СМС для перевода на безопасный счёт».", a:["Назвать код из СМС","Положить трубку: «безопасных счетов» не существует, банк никогда не просит коды из СМС","Перевести деньги по номеру телефона звонящего"], right:1},
+  {q:"Прежде чем подписать любой документ про жильё, доверенность или крупную сумму денег:", a:["Подписать сразу, если торопят","Сначала позвонить куратору, наставнику или юристу фонда и показать документ","Подписать, не читая мелкий шрифт"], right:1},
+  {q:"Если в мессенджере предлагают 10 000 ₽ в день за «курьерскую доставку закрытых свёрток без оформления»:", a:["Отличная подработка","Сразу отказаться и заблокировать: это вовлечение в криминал, уголовная ответственность с 16 лет","Попробовать один раз"], right:1}
+];
+
+function getAttest(){
+  return S.course === "c9" ? ATTEST_MONEY : ATTEST_REPAIR;
 }
-const ATTEST = ATTEST_MONEY;
+const ATTEST = ATTEST_REPAIR;
 
 const ORGS = ["Учреждение А (демо)","Учреждение Б (демо)","Учреждение В (демо)","Учреждение Г (демо)"];
 
@@ -422,7 +419,7 @@ const KIDS = [
   {id:"k1", name:"Ребёнок А (демо)", age:"15–16", toExit:31, org:ORGS[0], top:"tech",   progress:62, streak:5,  last:"сегодня",       risk:"ok",   consent:"есть", flag:false},
   {id:"k2", name:"Ребёнок Б (демо)", age:"15–16", toExit:27, org:ORGS[0], top:"image",  progress:88, streak:12, last:"сегодня",       risk:"ok",   consent:"есть", flag:false},
   {id:"k3", name:"Ребёнок В (демо)", age:"13–14", toExit:52, org:ORGS[0], top:"sign",   progress:9,  streak:0,  last:"19 дней назад", risk:"lost", consent:"есть", flag:false},
-  {id:"k4", name:"Артём К. (демо)", age:"17–18", toExit:4, org:ORGS[0], top:"people", progress:65, streak:3,  last:"сегодня",       risk:"warn", consent:"есть", flag:true, alarmMsg:"Вчера в телеграме предложили «быстрый заработок» — сдать карту за 5 000 ₽. Сказали, ничего незаконного. Боюсь, что влипну, хочу посоветоваться.", alarmHandled:false},
+  {id:"k4", name:"Ребёнок Г (демо)", age:"17–18", toExit:4, org:ORGS[1], top:"people", progress:41, streak:2,  last:"4 дня назад",   risk:"warn", consent:"есть", flag:true},
   {id:"k5", name:"Ребёнок Д (демо)", age:"13–14", toExit:49, org:ORGS[1], top:"nature", progress:23, streak:1,  last:"вчера",         risk:"warn", consent:"истекает через 2 недели", flag:false},
   {id:"k6", name:"Ребёнок Е (демо)", age:"15–16", toExit:22, org:ORGS[2], top:"image",  progress:74, streak:8,  last:"сегодня",       risk:"ok",   consent:"есть", flag:false}
 ];
@@ -431,26 +428,40 @@ const KEYS = [
   {key:"ДЕМО-01-4821", org:ORGS[0], age:"teen",  issued:"12.08.2026", by:"Сотрудник А.", rep:"организация-опекун", doc:"Согласие №117", status:"активирован"},
   {key:"ДЕМО-01-4822", org:ORGS[0], age:"young", issued:"12.08.2026", by:"Сотрудник А.", rep:"родитель с сохранёнными правами", doc:"Согласие №118", status:"активирован"},
   {key:"ДЕМО-02-1140", org:ORGS[1], age:"teen",  issued:"14.08.2026", by:"Сотрудник Б.", rep:"организация-опекун", doc:"Согласие №42",  status:"не активирован"},
+  {key:"ДЕМО-04-9001", org:ORGS[0], age:"grad",  issued:"03.02.2026", by:"Сотрудник А.", rep:"собственное согласие", doc:"Согласие №203", status:"активирован"},
   {key:"ДЕМО-03-0330", org:ORGS[2], age:"teen",  issued:"05.08.2026", by:"Сотрудник В.", rep:"не указан",          doc:"—",             status:"заблокирован"}
+];
+
+/* Роль определяется учётной записью, а не переключателем в интерфейсе. */
+const STAFF = [
+  {login:"kurator",      pass:"demo", role:"curator", name:"Марина С.",     title:"Куратор"},
+  {login:"psiholog",     pass:"demo", role:"psy",     name:"Ольга В.",      title:"Психолог"},
+  {login:"prepodavatel", pass:"demo", role:"teacher", name:"Игорь П.",      title:"Преподаватель"},
+  {login:"admin",        pass:"demo", role:"admin",   name:"Администратор", title:"Администратор фонда"}
 ];
 
 /* ============ состояние ============ */
 const BLANK = {
-  role:"child", screen:"login", notes:false, ageBand:"teen",
+  role:"child", screen:"login", ageBand:"teen", theme:"light", roleTitle:"Ученик", loginTab:"kid",
   loggedIn:false, name:"Артём", org:null, quick:{}, quickDone:false,
   anketaStep:0, anketa:{}, anketaDone:false,
   psy:{}, psyDone:false,
-  course:null, lessonMode:"text", hwSent:false, photo:false,
+  course:"c9", lessonMode:"video", hwSent:false, photo:false,
   attest:{}, attestDone:false, attestScore:0, exit:{},
-  psyKid:"k4", checked:{}, scenarioChoice:null, customVideo:"https://rutube.ru/play/embed/f88a988f0c9edeb963bb68baa9c50698/"
+  psyKid:"k1", checked:{}
 };
 let S = JSON.parse(JSON.stringify(BLANK));
-try{ const saved = sessionStorage.getItem("navigator-demo"); if(saved) S = Object.assign(S, JSON.parse(saved)); }catch(e){}
-function save(){ try{ sessionStorage.setItem("navigator-demo", JSON.stringify(S)); }catch(e){} }
+try{ const saved = sessionStorage.getItem("navigator-child"); if(saved) S = Object.assign(S, JSON.parse(saved)); }catch(e){}
+function save(){ try{ sessionStorage.setItem("navigator-child", JSON.stringify(S)); }catch(e){} }
+
+/* Тема выставляется до первого рендера: иначе зритель с тёмной системной темой
+   на секунду видит тёмный интерфейс. По умолчанию светлая — одинаково у всех. */
+if(!S.theme) S.theme = "light";
+document.documentElement.setAttribute("data-theme", S.theme);
 
 /* ============ утилиты ============ */
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const note = (title, body) => `<div class="note"><b>${esc(title)}</b><span>${esc(body)}</span></div>`;
+const note = () => "";   // проектные заметки в интерфейсе не показываются
 
 function scores(){
   const acc = {people:0,tech:0,sign:0,image:0,nature:0};
@@ -521,10 +532,6 @@ const doneOf = id => ({
 }[id]);
 
 /* ============ рендер оболочки ============ */
-function renderRoles(){
-  document.getElementById("roles").innerHTML = ROLES.map(r=>
-    `<button data-role="${r.id}" aria-pressed="${S.role===r.id}">${esc(r.label)}</button>`).join("");
-}
 function renderRail(){
   let html = "";
   if(S.role==="child"){
@@ -544,49 +551,53 @@ function renderRail(){
     });
     html += `</ul></div>`;
   }
-  html += `<div class="railgroup"><div class="eyebrow" style="margin:0 0 9px 4px">Что это</div>
-    <p class="dim" style="padding:0 4px">Продукт по ТЗ, собранный целиком. Переключайте роли сверху — каждая видит своё.
-    Кнопка «Проектные решения» показывает, где и почему продукт расходится с исходным ТЗ.</p></div>`;
-  document.getElementById("rail").innerHTML = html;
+  const railEl = document.getElementById("rail");
+  railEl.innerHTML = S.loggedIn ? html : "";
+  railEl.hidden = !S.loggedIn;
+  document.querySelector(".shell").classList.toggle("norail", !S.loggedIn);
 }
 
 /* ============ экраны: ребёнок ============ */
 const V = {};
 
 V.login = () => `
-<div class="stack">
-  ${gateMsg ? `<div class="locked">Шаг «${esc(gateMsg)}» откроется после входа — сначала введи ключ доступа.</div>` : ""}
+<div class="stack" style="max-width:470px; margin:0 auto">
+  ${gateMsg ? `<div class="locked">Раздел «${esc(gateMsg)}» доступен после входа.</div>` : ""}
   <div class="hero">
-    <div class="eyebrow">Закрытый доступ</div>
-    <h1 style="margin-top:8px">Здесь помогают понять, что у тебя получается</h1>
-    <p style="margin-top:10px; max-width:52ch">Вход только по ключу, который выдаёт твой воспитатель или куратор. Без ключа сюда попасть нельзя — и никто посторонний тебя здесь не увидит.</p>
+    <div class="eyebrow">Закрытый доступ · Кабинет ученика</div>
+    <h1 style="margin-top:8px">Навигатор</h1>
+    <p style="margin-top:10px">Образовательная платформа для подростков.
+      Вход только по выданному ключу — постороннего здесь нет.</p>
   </div>
-  ${note("Раздел 4 ТЗ","Регистрация невозможна без ключа. Ключ сверяется с реестром и с документом-основанием — попробуйте ДЕМО-03-0330, он заблокирован из-за отсутствия согласия.")}
-  <form class="card pad" style="max-width:440px" data-act="loginForm">
-    <div class="stack-sm">
+
+  <div class="card pad">
+    <form class="stack-sm" data-act="loginForm">
       <label class="field">Ключ доступа
         <input type="text" id="keyInput" value="ДЕМО-01-4821" spellcheck="false"
-          aria-describedby="keyHint" style="font-family:var(--font-mono); letter-spacing:.06em">
+          style="font-family:var(--font-mono); letter-spacing:.06em">
       </label>
-      <p class="dim" id="keyHint">Демо-ключи: <span class="tnum">ДЕМО-01-4821</span> — рабочий,
-        <span class="tnum">ДЕМО-03-0330</span> — заблокированный. Любой другой не подойдёт.</p>
       <label class="field">Как тебя зовут
-        <input type="text" id="nameInput" value="${esc(S.name)}" aria-describedby="nameHint">
+        <input type="text" id="nameInput" value="${esc(S.name)}">
       </label>
-      <p class="dim" id="nameHint">Введи любое имя — это демонстрация, не настоящее.</p>
       <div id="keyErr" role="alert" aria-live="assertive"></div>
       <button class="btn" type="submit" data-act="login" style="margin-top:6px">Войти</button>
-      <p class="dim">Забыл ключ — подойди к куратору. Он выдаст новый, а тебе придёт уведомление о том, что доступ восстановили.</p>
-    </div>
-  </form>
-  ${note("Вопрос 4 заказчику","Восстановление через куратора — вариант «C» из списка вопросов: куратор помогает войти, но не видит психологический профиль, и ребёнок узнаёт о восстановлении.")}
-  <div class="card pad">
-    <div class="eyebrow">Общее устройство</div>
-    <h3 style="margin-top:6px">Кнопка «Выйти» видна на каждом экране и стирает всё за собой</h3>
-    <p class="muted" style="margin-top:6px">В детском доме вход чаще всего с общего компьютера. Следующий ребёнок не должен попасть в чужой профиль. Это работает по-настоящему: выйдите на любом шаге и войдите заново — путь начнётся с нуля, чужих ответов не останется.</p>
-    <p class="dim" style="margin-top:8px">Автоматическое закрытие сессии через 15 минут без действий — требование к продукту, в этой демонстрации не включено.</p>
-    ${note("Усиление №9","Этого требования в ТЗ нет — добавлено по итогам анализа как 🔴. Самый вероятный инцидент первого дня пилота.")}
+      <p class="dim">Ключ выдаёт куратор. Если ключ потерялся — подойди к нему: он выдаст новый,
+        а тебе придёт уведомление о том, что доступ восстановили.</p>
+    </form>
   </div>
+
+  <details class="card pad demoacc" open>
+    <summary>Тестовые ключи учеников (нажмите для подстановки)</summary>
+    <div class="stack-sm" style="margin-top:12px">
+      <div class="row" style="gap:6px">
+        <button class="toolbtn" type="button" data-act="fillKey" data-key="ДЕМО-01-4821" data-name="Артём">ДЕМО-01-4821 (15–18 лет)</button>
+        <button class="toolbtn" type="button" data-act="fillKey" data-key="ДЕМО-01-4822" data-name="Даня">ДЕМО-01-4822 (12–14 лет)</button>
+        <button class="toolbtn" type="button" data-act="fillKey" data-key="ДЕМО-04-9001" data-name="Илья">ДЕМО-04-9001 (выпускник 18+)</button>
+        <button class="toolbtn" type="button" data-act="fillKey" data-key="ДЕМО-03-0330" data-name="Максим">ДЕМО-03-0330 (заблокирован)</button>
+      </div>
+      <p class="dim">Возрастной режим определяется автоматически по ключу доступа.</p>
+    </div>
+  </details>
 </div>`;
 
 V.insight = () => {
@@ -805,7 +816,7 @@ V.catalog = () => {
             <span class="pill ${c.track===top?"acc":""}">${esc(TRACKS[c.track].name)}</span>
             <span class="pill">${esc(c.age)}</span>
             ${c.track===top?`<span class="pill good">Тебе подходит</span>`:""}
-            ${c.id==="c1"?`<span class="pill amb">урок развёрнут</span>`:""}
+            ${(c.id==="c1"||c.id==="c9")?`<span class="pill amb">урок + видео</span>`:""}
           </div>
           <h3 style="margin-top:10px">${esc(c.title)}</h3>
           <p class="dim" style="margin-top:6px">${young()
@@ -819,162 +830,85 @@ V.catalog = () => {
     ${note("Вопрос 6 заказчику","Каталог заполнен партнёрскими курсами, а не собственным продакшном. В ТЗ вопрос «откуда контент» не поднят вообще — а это часто дороже самой разработки.")}
     ${note("436-ФЗ","Возрастная маркировка проставляется при загрузке курса, а не после. Курс без неё и без текстовой версии уроков не публикуется.")}
     ${hidden?note("436-ФЗ · фильтрация","В регистре 12–14 курсы с маркировкой 16+ не отображаются вовсе. Скрыто карточек: "+hidden+". Возраст берётся из записи ключа, а не спрашивается у ребёнка."):""}
-    <p class="dim">Здесь развёрнут один полный урок — в курсе «Первый ремонт». Остальные карточки показывают формат каталога.</p>
+    <p class="dim">Полные уроки с видео с Rutube развёрнуты в курсах «Взрослая жизнь: документы, жильё, деньги» и «Первый ремонт». Остальные карточки показывают формат каталога.</p>
   </div>`;
 };
 
 V.lesson = () => {
   const c = courseById(S.course) || COURSES[0];
   const text = S.lessonMode === "text";
-  const isC0 = c.id === "c0";
-  const isC1 = c.id === "c1";
+  const isMoney = c.id === "c9";
+  const isRepair = c.id === "c1";
+  const isReal = isMoney || isRepair;
+  const videoSrc = isMoney
+    ? "https://rutube.ru/play/embed/f88a988f0c9edeb963bb68baa9c50698/"
+    : "https://rutube.ru/play/embed/122a37cabf763e345d597d84c5e5878b/";
+  const lessonTitle = isMoney
+    ? "Первые деньги, подработка и как не попасть на развод с картой"
+    : (isRepair ? "Отвёртка, бита и первый саморез" : "Пример урока");
 
-  if (isC0) {
-    const videoUrl = S.customVideo || "https://rutube.ru/play/embed/f88a988f0c9edeb963bb68baa9c50698/";
-    return `<div class="stack">
-      <div class="eyebrow">Шаг 7 · ${esc(c.title)} · урок 1 из ${c.lessons}</div>
-      <h1>Дропперы, лёгкий заработок и аренда карты</h1>
-      <p class="muted">Курс для 16–18 лет перед выпуском: как не потерять выплаты и не попасть под уголовное дело.</p>
-      
-      <div class="row" style="justify-content:space-between; align-items:center">
-        <div class="seg">
-          <button data-act="mode" data-m="video" aria-pressed="${!text}">Видеоурок (Rutube)</button>
-          <button data-act="mode" data-m="text" aria-pressed="${text}">Текстом</button>
-        </div>
-        <span class="pill ${text?"good":"good"}">${text?"~50 КБ · коротко и по делу":"Rutube без авторизации · 5 минут"}</span>
-      </div>
-
-      <div class="card pad">
-        ${!text ? `
-          <div style="position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:var(--r); background:#000; box-shadow:var(--shadow);">
-            <iframe id="videoIframe" src="${esc(videoUrl)}"
-              style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;"
-              allow="clipboard-write; autoplay; fullscreen" allowFullScreen></iframe>
-          </div>
-          <div style="margin-top:14px; background:var(--surface-2); padding:12px 14px; border-radius:var(--r); border:1px solid var(--line);">
-            <div style="font-size:12.5px; font-weight:600; color:var(--ink-2); margin-bottom:6px">
-              🎬 Видео играет с Rutube без авторизации. Можно вставить ссылку на любое другое видео:
-            </div>
-            <div style="display:flex; gap:8px">
-              <input type="text" id="videoUrlInput" placeholder="Ссылка на Rutube, VK Видео, YouTube или MP4..." value="${esc(S.customVideo || '')}" style="flex:1; padding:7px 12px; font-size:13px; border:1px solid var(--line); border-radius:6px; background:var(--surface); color:var(--ink)">
-              <button class="btn ghost" data-act="applyVideo" style="padding:7px 14px; font-size:13px">Применить</button>
-            </div>
-          </div>
-        ` : `
-          <div class="lessonbody">
-            <div class="card pad" style="border-left:4px solid var(--crit); margin-bottom:12px; background:var(--surface)">
-              <h3 style="color:var(--crit); margin-bottom:4px">1. «Сдай карту на день за 5 000 ₽» — это преступление</h3>
-              <p>Никогда не передавай свою банковскую карту чужим людям, даже знакомым. Через такие карты преступники отмывают украденные деньги. По закону (ст. 159 и 187 УК РФ) соучастником считается тот, на чьё имя оформлена карта. Тебя внесут в чёрные списки банков по 115-ФЗ, а все подъёмные выплаты от государства будут заморожены.</p>
-            </div>
-            <div class="card pad" style="border-left:4px solid var(--amber); margin-bottom:12px; background:var(--surface)">
-              <h3 style="color:var(--amber); margin-bottom:4px">2. Быстрый заработок в Telegram: 10 000 ₽ в день</h3>
-              <p>Если тебе предлагают большие деньги «просто за доставку посылок» без адреса отправителя или «за перевод денег» — это криминал (дропперство или запрещённые вещества). Уголовный срок за это наступает с 16 лет. Легких денег в интернете не бывает.</p>
-            </div>
-            <div class="card pad" style="border-left:4px solid var(--good); background:var(--surface)">
-              <h3 style="color:var(--good); margin-bottom:4px">3. Как устроиться честно и безопасно</h3>
-              <p>В 16–18 лет можно работать курьером, на складе, бариста, промоутером. Главное правило: официальное оформление (трудовой договор, договор ГПХ или статус самозанятого через официальное приложение ФНС «Мой налог»). Честный работодатель платит тебе за твой труд, а не просит твои банковские реквизиты для чужих переводов.</p>
-            </div>
-          </div>
-        `}
-      </div>
-
-      <div class="card pad">
-        <div class="eyebrow">Тренажёр жизненных ситуаций</div>
-        <h3 style="margin-top:6px">Тебе пишет знакомый: «Выручи, переведи через карту 30 000 ₽, 3 000 ₽ оставишь себе»</h3>
-        <p class="muted" style="margin-top:6px">Выбери, как ты поступишь:</p>
-        <div class="stack-sm" style="margin-top:12px">
-          <button class="choice" data-act="scenarioChoice" data-c="bad" aria-pressed="${S.scenarioChoice==='bad'}">
-            <span class="mark"></span><span>Согласиться: 3 000 рублей не лишние, он же знакомый</span>
-          </button>
-          <button class="choice" data-act="scenarioChoice" data-c="good" aria-pressed="${S.scenarioChoice==='good'}">
-            <span class="mark"></span><span>Отказать и ни в коем случае не давать номер карты</span>
-          </button>
-        </div>
-        ${S.scenarioChoice==='bad' ? `
-          <div class="locked" style="margin-top:14px">
-            🔴 <b>Опасно!</b> Это классическая схема «дропперства». Деньги, которые тебе переведут — украдены. Полиция придет именно к владельцу карты (к тебе), счет заблокируют по 115-ФЗ, а сумму ущерба придется возвращать со своих выплат.
-          </div>
-        ` : ""}
-        ${S.scenarioChoice==='good' ? `
-          <div class="card pad" style="margin-top:14px; border-color:var(--good); background:var(--good-soft); color:var(--good)">
-            🟢 <b>Абсолютно верно!</b> Твоя банковская карта — это твой личный паспорт в финансовом мире. Никогда не пропускай через неё чужие деньги.
-          </div>
-        ` : ""}
-      </div>
-
-      <div class="row" style="margin-top:8px">
-        <button class="btn" data-screen="attestation">Перейти к аттестации (3 вопроса) →</button>
-      </div>
-    </div>`;
-  }
-
-  const isReal = isC1;
   return `<div class="stack">
-    <div class="eyebrow">Шаг 7 · ${esc(c.title)} · урок 3 из ${c.lessons}</div>
-    <h1>${isReal ? "Отвёртка, бита и первый саморез" : "Пример урока"}</h1>
+    <div class="eyebrow">Шаг 7 · ${esc(c.title)} · урок ${isMoney?1:3} из ${c.lessons}</div>
+    <h1>${lessonTitle}</h1>
     ${!isReal ? `<div class="locked">
-      В каталоге развёрнуты два интерактивных урока с реальными материалами:
-      <br>1. <b>«Первые деньги: как не дать себя развести»</b> (с видео Rutube для 16–18 лет).
-      <br>2. <b>«Первый ремонт: инструмент и безопасность»</b>.
-      <br><br>Перейдите в каталог и выберите «Первые деньги» или «Первый ремонт».
+      Полные уроки с видео развёрнуты в курсах <b>«Взрослая жизнь: документы, жильё, деньги»</b> и <b>«Первый ремонт: инструмент и безопасность»</b>.
+      Остальные курсы показаны витриной.
+      <br><br><b>Чтобы посмотреть согласованную связку курс → урок → аттестация → сертификат,
+      вернитесь в каталог и откройте «Взрослая жизнь» или «Первый ремонт».</b>
     </div>` : ""}
     <div class="row" style="justify-content:space-between">
       <div class="seg">
         <button data-act="mode" data-m="text" aria-pressed="${text}">Текстом</button>
         <button data-act="mode" data-m="video" aria-pressed="${!text}">Видео</button>
       </div>
-      <span class="pill ${text?"good":"warn"}">${text?"~200 КБ, откроется на любом канале":"~48 МБ, нужен нормальный интернет"}</span>
+      <span class="pill ${text?"good":"warn"}">${text?"~200 КБ, откроется на любом канале":"Rutube плеер (без авторизации)"}</span>
     </div>
-    ${note("Усиление №6","Текстовая версия — не запасной вариант, а режим по умолчанию. Именно в целевых регионах видео чаще всего не откроется.")}
     <div class="card pad">
-      ${text ? `<div class="lessonbody">
+      ${text ? (isMoney ? `<div class="lessonbody">
+        <p><b>1. «Сдай карту в аренду за 5 000 ₽» — это ловушка (дропперство).</b> Если знакомый или человек в мессенджере просит оформить карту на твоё имя или пропустить через твою карту чужой перевод за процент — через неё выводят краденые деньги. По закону (ст. 159 и 187 УК РФ) полиция приходит к владельцу карты, а банки блокируют все твои счета по 115-ФЗ вместе с подъёмными выплатами.</p>
+        <p><b>2. Первая подработка: только с договором или через «Мой налог».</b> Честная подработка в 16–18 лет (курьер, склад, сборка заказов, кафе) оформляется трудовым договором, договором ГПХ или через официальное приложение самозанятого «Мой налог». Если обещают «золотые горы без оформления» или просят сначала заплатить за обучение/форму — это обман.</p>
+        <p><b>3. «Безопасных счетов» не существует.</b> Ни банк, ни опека, ни полиция никогда не звонят с просьбой назвать код из СМС или перевести выплаты на «защищённый счёт». Услышал про код или перевод — сразу клади трубку.</p>
+        <p><b>4. Правило одного звонка.</b> Прежде чем подписать любую бумагу про деньги, кредит, доверенность или жильё — сначала позвони куратору или юристу фонда и покажи фото документа.</p>
+      </div>` : `<div class="lessonbody">
         <p>Отвёртка держится не пальцами, а всей ладонью: усилие идёт вдоль оси, а не вбок. Если давить вбок, бита срывается и облизывает шлиц — саморез после этого выкрутить уже трудно.</p>
         <p>Бита подбирается по шлицу, а не «примерно подходит». PH2 — самый частый размер для бытовых саморезов; PH1 в таком шлице будет болтаться и сорвёт крестовину с первого нажима.</p>
         <p>Первый оборот делается медленно и с нажимом — саморез должен «поймать» материал. Дальше нажим уменьшают, иначе шляпка утонет и в гипсокартоне просто провернётся впустую.</p>
         <p>В гипсокартон без дюбеля можно вешать только лёгкое: крючок, кабель-канал. Полка с книгами сорвёт саморез вместе с куском стены — для неё нужен дюбель-бабочка или попадание в профиль.</p>
-      </div>` : `
-        <div style="position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:var(--r); background:#000;">
-          <iframe src="https://rutube.ru/play/embed/f88a988f0c9edeb963bb68baa9c50698/"
-            style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;"
-            allow="clipboard-write; autoplay; fullscreen" allowFullScreen></iframe>
-        </div>
-      `}
+      </div>`) : `<div style="position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:var(--r); background:#000">
+        <iframe src="${videoSrc}" style="position:absolute; top:0; left:0; width:100%; height:100%; border:0" allow="clipboard-write; autoplay; fullscreen" allowfullscreen></iframe>
+      </div>`}
     </div>
     <div class="card pad">
       <div class="eyebrow">Домашнее задание</div>
-      <h3 style="margin-top:6px">Закрути два самореза: один в дерево, один в гипсокартон с дюбелем</h3>
-      <p class="muted" style="margin-top:6px">Практические задания выполняются только вместе со взрослым. Сфотографируй результат и напиши, что было сложнее. Проверит преподаватель, ответ придёт в течение суток.</p>
+      <h3 style="margin-top:6px">${isMoney ? "Разбери ситуацию: знакомый просит перевести 20 000 ₽ через твою карту за 2 000 ₽" : "Закрути два самореза: один в дерево, один в гипсокартон с дюбелем"}</h3>
+      <p class="muted" style="margin-top:6px">${isMoney ? "Напиши коротко, почему соглашаться нельзя и что грозит владельцу карты. Проверит преподаватель, ответ придёт в течение суток." : "Практические задания выполняются только вместе со взрослым. Сфотографируй результат и напиши, что было сложнее. Проверит преподаватель, ответ придёт в течение суток."}</p>
       ${S.hwSent
         ? `<div class="row" style="margin-top:14px"><span class="pill good">Отправлено</span><span class="dim">Ждём проверку преподавателя</span></div>`
         : `<div class="stack-sm" style="margin-top:14px">
-            <textarea rows="3" placeholder="Что получилось, что было сложно" aria-label="Что получилось, что было сложно"></textarea>
+            <textarea rows="3" placeholder="${isMoney ? "Напиши свой ответ..." : "Что получилось, что было сложно"}" aria-label="Ответ на задание"></textarea>
             ${S.photo?`<div class="row"><span class="pill good">фото прикреплено</span><span class="dim">макет вложения</span></div>`:""}
             <div class="row"><button class="btn" data-act="hw">Отправить на проверку</button>
-            <button class="btn ghost" data-act="hwPhoto">Прикрепить фото</button></div>
+            ${isMoney?"":`<button class="btn ghost" data-act="hwPhoto">Прикрепить фото</button>`}</div>
           </div>`}
     </div>
     <div class="row"><button class="btn" data-screen="attestation">Перейти к аттестации</button></div>
   </div>`;
 };
 
-
 V.attestation = () => {
-  const curAtt = currentAttest();
-  const total = curAtt.length;
-  const passScore = curAtt === ATTEST_MONEY ? 2 : 3;
   const answered = Object.keys(S.attest).length;
   if(S.attestDone){
-    const ok = S.attestScore >= passScore;
+    const ok = S.attestScore>=3;
     return `<div class="stack">
       <div class="eyebrow">Шаг 8 · ${A("Проверь себя","Аттестация")}</div>
-      <h1>${ok?"Сдано!":"Пока не сдано"}</h1>
+      <h1>${ok?"Сдано":"Пока не сдано"}</h1>
       <div class="card pad" style="border-color:${ok?"var(--good)":"var(--warn)"}">
         <div class="row" style="gap:10px">
-          <span class="pill ${ok?"good":"warn"}">${S.attestScore} из ${total}</span>
-          <span class="muted">${ok?"Проходной балл набран. Именной сертификат доступен!" : `Нужно минимум ${passScore}. Пересдача открыта сразу, попытки не ограничены.`}</span>
+          <span class="pill ${ok?"good":"warn"}">${S.attestScore} из ${getAttest().length}</span>
+          <span class="muted">${ok?"Проходной балл — 3. Сертификат доступен." : "Нужно минимум 3. Пересдача открыта сразу, попытки не ограничены."}</span>
         </div>
         <div class="stack-sm" style="margin-top:16px">
-          ${curAtt.map((q,i)=>{
+          ${getAttest().map((q,i)=>{
             const right = S.attest[i]===q.right;
             return `<div class="row" style="align-items:flex-start; gap:9px">
               <span class="pill ${right?"good":"crit"}">${right?"верно":"нет"}</span>
@@ -984,7 +918,8 @@ V.attestation = () => {
           }).join("")}
         </div>
       </div>
-      <div class="row" style="margin-top:14px">
+      ${note("Усиление №12","Результат фиксируется строкой-фактом в момент сдачи: балл, дата, версия курса. Правка курса задним числом не переписывает уже выданные результаты и сертификаты.")}
+      <div class="row">
         ${ok?`<button class="btn" data-screen="certificate">Получить сертификат</button>`:""}
         <button class="btn ghost" data-act="attestReset">Пройти заново</button>
       </div>
@@ -993,9 +928,9 @@ V.attestation = () => {
   return `<div class="stack">
     <div class="eyebrow">Шаг 8 · ${A("Проверь себя","Аттестация")}</div>
     <h1>Проверим, что осталось в голове</h1>
-    <p class="muted">Всего вопросов: ${total}. Пересдать можно сразу, если ошибся.</p>
-    <div class="bar"><i style="width:${Math.round(answered/total*100)}%"></i></div>
-    ${curAtt.map((q,i)=>`
+    <p class="muted">Пять вопросов. ${A("Не получилось — ничего страшного, можно сразу ещё раз","Не сдал — не страшно, пересдать можно сразу")}.</p>
+    <div class="bar"><i style="width:${Math.round(answered/getAttest().length*100)}%"></i></div>
+    ${getAttest().map((q,i)=>`
       <div class="card pad">
         <h3>${esc(q.q)}</h3>
         <div class="stack-sm" style="margin-top:12px">
@@ -1003,8 +938,8 @@ V.attestation = () => {
             aria-pressed="${S.attest[i]===ai}"><span class="mark"></span><span>${esc(a)}</span></button>`).join("")}
         </div>
       </div>`).join("")}
-    <div class="row"><button class="btn" data-act="attestDone" ${answered<total?"disabled":""}>Завершить</button>
-    <span class="dim">${answered} из ${total}</span></div>
+    <div class="row"><button class="btn" data-act="attestDone" ${answered<getAttest().length?"disabled":""}>Завершить</button>
+    <span class="dim">${answered} из ${getAttest().length}</span></div>
   </div>`;
 };
 
@@ -1040,7 +975,7 @@ V.certificate = () => {
       <h2 style="margin-top:14px">${esc(c.title)}</h2>
       <div class="row" style="margin-top:18px; justify-content:space-between; align-items:flex-end">
         <div class="stack-sm">
-          <div><div class="eyebrow">Результат</div><div class="tnum">${S.attestScore} из ${ATTEST.length}</div></div>
+          <div><div class="eyebrow">Результат</div><div class="tnum">${S.attestScore} из ${getAttest().length}</div></div>
           <div><div class="eyebrow">Дата</div><div class="tnum">17.08.2026</div></div>
           <div><div class="eyebrow">Номер</div><div class="tnum">${num}</div></div>
         </div>
@@ -1302,22 +1237,13 @@ V.psy_kid = () => {
         <p class="dim" style="margin-top:8px">Кнопки без действия — макет.</p>
       </div>
     </div>
-    ${k.flag ? `<div class="card pad" style="border-color:var(--crit); background:var(--crit-soft); margin-top:16px;">
-      <div class="pill crit">Требует реакции · Сигнал от подростка</div>
-      <h3 style="margin-top:10px; color:var(--crit)">Сообщение от Артёма (сегодня, 11:20):</h3>
-      <p style="margin-top:6px; font-size:15px; font-weight:500; color:var(--ink); background:var(--surface); padding:10px 14px; border-radius:var(--r); border:1px solid var(--line);">
-        «${esc(k.alarmMsg || "Вчера в телеграме предложили сдать карту за 5 000 ₽. Боюсь, что влипну, хочу посоветоваться.")}»
-      </p>
-      <div class="row" style="margin-top:14px">
-        <button class="btn" data-act="handleAlarm" data-k="${k.id}">✅ Провести беседу / Снять угрозу</button>
-      </div>
-      <p class="dim" style="margin-top:8px">По регламенту эскалации: психолог связывается в течение рабочего дня. Запись разговора не ведётся по ст. 10 152-ФЗ.</p>
-    </div>` : (k.alarmHandled ? `<div class="card pad" style="border-color:var(--good); background:var(--good-soft); margin-top:16px;">
-      <div class="pill good">Беседа проведена психологом</div>
-      <p style="margin-top:6px; color:var(--good); font-weight:500">
-        ✅ 16.11.2026 психолог связался с подростком: разъяснены риски ст. 159 УК РФ (дропперство). Подросток отказался от передачи карты, сигнал обработан.
-      </p>
-    </div>` : "")}
+    ${k.flag?`<div class="card pad" style="border-color:var(--crit)">
+      <div class="pill crit">Требует реакции</div>
+      <h3 style="margin-top:10px">Пример: ребёнок попросил о встрече</h3>
+      <p class="muted" style="margin-top:6px">По регламенту эскалации: связаться в течение рабочего дня, зафиксировать факт обращения, при признаках угрозы — уведомить ответственное лицо организации.</p>
+      <p class="dim" style="margin-top:8px">Сценарий показан для демонстрации регламента, реального обращения за ним нет.</p>
+      ${note("Усиление №8","Регламент эскалации — процедура для людей, а не функция. Кто именно обязан сообщить и в какой срок, нужно установить до пилота и закрепить в договоре с учреждением. Продукт лишь гарантирует, что сигнал не потеряется и факт передачи зафиксирован.")}
+    </div>`:""}
     <div class="row"><button class="btn ghost" data-screen="psy_list">← К списку</button></div>
   </div>`;
 };
@@ -1528,8 +1454,7 @@ function focusKey(el){
 }
 function render(){
   if(S.role !== "child" && !OTHER[S.role]) S.role = "child";
-  const gate = ["insight","anketa","psytest","profile","catalog","lesson","attestation","certificate","cabinet","exitprep","aftergrad"];
-  if(S.role==="child" && !S.loggedIn && gate.indexOf(S.screen)>-1){
+  if(!S.loggedIn && S.screen !== "login"){
     const step = JOURNEY_ALL.find(j => j[0] === S.screen);
     gateMsg = step ? jlabel(step) : null;
     S.screen = "login";
@@ -1540,35 +1465,28 @@ function render(){
   const keep = canvas.contains(active) ? focusKey(active) : null;
   const keepRail = rail.contains(active) && active.dataset && active.dataset.screen
     ? `[data-screen="${active.dataset.screen}"]` : null;
-  const keepRole = active && active.dataset && active.dataset.role
-    ? `[data-role="${active.dataset.role}"]` : null;
   const fn = V[S.screen] || V.login;
   canvas.innerHTML = fn();
   gateMsg = null;
   if(keep){ const back = canvas.querySelector(keep); if(back) back.focus({preventScroll:true}); }
-  renderRoles(); renderRail();
+  renderRail();
   if(keepRail){ const b = rail.querySelector(keepRail); if(b) b.focus({preventScroll:true}); }
-  if(keepRole){ const b = document.getElementById("roles").querySelector(keepRole); if(b) b.focus({preventScroll:true}); }
-  document.getElementById("logoutBtn").hidden = !(S.role === "child" && S.loggedIn);
-  document.getElementById("ageSw").hidden = S.role !== "child";
-  document.querySelectorAll("#ageSw [data-age]").forEach(b=>{
-    b.setAttribute("aria-pressed", String(b.dataset.age === S.ageBand));
-  });
-  document.body.classList.toggle("young", young());
-  document.body.classList.toggle("notes-on", S.notes);
-  document.getElementById("notesBtn").setAttribute("aria-pressed", String(S.notes));
+  const who = document.getElementById("who");
+  who.hidden = !S.loggedIn;
+  if(S.loggedIn){
+    document.getElementById("whoName").textContent = S.name;
+    document.getElementById("whoRole").textContent = S.roleTitle || "";
+  }
+  document.documentElement.setAttribute("data-theme", S.theme);
+  document.getElementById("themeBtn").textContent =
+    S.theme === "dark" ? "Светлая тема" : "Тёмная тема";
+  document.body.classList.toggle("young", young() && S.role === "child");
   save();
 }
 function go(screen){ S.screen = screen; window.scrollTo({top:0,behavior:"instant"}); render(); }
 
 /* ============ события ============ */
 document.addEventListener("click", e => {
-  const roleBtn = e.target.closest("[data-role]");
-  if(roleBtn){
-    S.role = roleBtn.dataset.role;
-    S.screen = S.role==="child" ? (S.loggedIn?"cabinet":"login") : OTHER[S.role][0][0];
-    return go(S.screen);
-  }
   const scr = e.target.closest("[data-screen]");
   if(scr) return go(scr.dataset.screen);
 
@@ -1589,13 +1507,15 @@ document.addEventListener("click", e => {
       err.innerHTML = `<div class="locked">Ключ заблокирован: к нему не приложен документ-основание. Обратись к куратору — без согласия законного представителя доступ не открывается.</div>`;
       return;
     }
-    S.loggedIn = true; S.org = rec.org; S.ageBand = rec.age;
-    if(nm) S.name = nm; return go("insight");
+    S.loggedIn = true; S.role = "child"; S.roleTitle = "Ученик";
+    S.org = rec.org; S.ageBand = rec.age;
+    if(nm) S.name = nm;
+    return go(rec.age === "grad" ? "aftergrad" : "insight");
   }
   if(a==="logout"){
-    const keepRole = S.role, keepNotes = S.notes;
+    const keepTheme = S.theme;
     S = JSON.parse(JSON.stringify(BLANK));
-    S.role = keepRole; S.notes = keepNotes;
+    S.theme = keepTheme;
     return go("login");
   }
   if(a==="quick"){ S.quick[el.dataset.q]=+el.dataset.a; return render(); }
@@ -1610,6 +1530,35 @@ document.addEventListener("click", e => {
   if(a==="anketaReset"){ S.anketa={}; S.anketaStep=0; S.anketaDone=false; return render(); }
   if(a==="psy"){ S.psy[el.dataset.i]=+el.dataset.v; return render(); }
   if(a==="psyDone"){ S.psyDone=true; return go("profile"); }
+  if(a==="loginTab"){ S.loginTab = el.dataset.tab; return render(); }
+  if(a==="fillKey"){
+    const ki = document.getElementById("keyInput");
+    const ni = document.getElementById("nameInput");
+    if(ki) ki.value = el.dataset.key;
+    if(ni && el.dataset.name) ni.value = el.dataset.name;
+    return;
+  }
+  if(a==="fillStaff"){
+    const li = document.getElementById("loginInput");
+    const pi = document.getElementById("passInput");
+    if(li) li.value = el.dataset.login;
+    if(pi) pi.value = "demo";
+    const btn = document.querySelector("button[data-act='loginStaff']");
+    if(btn) btn.click();
+    return;
+  }
+  if(a==="loginStaff"){
+    const lg = (document.getElementById("loginInput").value||"").trim().toLowerCase();
+    const pw = (document.getElementById("passInput").value||"").trim();
+    const acc = STAFF.find(x => x.login === lg && x.pass === pw);
+    if(!acc){
+      document.getElementById("keyErr").innerHTML =
+        `<div class="locked">Неверный логин или пароль.</div>`;
+      return;
+    }
+    S.loggedIn = true; S.role = acc.role; S.name = acc.name; S.roleTitle = acc.title;
+    return go(OTHER[acc.role][0][0]);
+  }
   if(a==="psyReset"){ S.psy={}; S.psyDone=false; return render(); }
   if(a==="exitToggle"){ const k=el.dataset.k; S.exit[k] = !S.exit[k]; return render(); }
   if(a==="pick"){ S.course=el.dataset.c; return go("lesson"); }
@@ -1617,29 +1566,9 @@ document.addEventListener("click", e => {
   if(a==="hw"){ S.hwSent=true; return render(); }
   if(a==="hwPhoto"){ S.photo=true; return render(); }
   if(a==="attest"){ S.attest[el.dataset.i]=+el.dataset.a; return render(); }
-  if(a==="scenarioChoice"){
-    S.scenarioChoice = el.dataset.c;
-    return render();
-  }
-  if(a==="applyVideo"){
-    const inp = document.getElementById("videoUrlInput");
-    if(inp && inp.value.trim()){
-      let v = inp.value.trim();
-      const m = v.match(/rutube\.ru\/video\/([a-zA-Z0-9]+)/);
-      if(m) v = "https://rutube.ru/play/embed/" + m[1] + "/";
-      S.customVideo = v;
-      return render();
-    }
-  }
-  if(a==="handleAlarm"){
-    const kid = KIDS.find(x => x.id === (el.dataset.k || S.psyKid));
-    if(kid){ kid.flag = false; kid.alarmHandled = true; }
-    return render();
-  }
   if(a==="attestDone"){
-    const curAtt = currentAttest();
-    S.attestDone = true;
-    S.attestScore = curAtt.reduce((n,q,i)=>n+(S.attest[i]===q.right?1:0),0);
+    S.attestDone=true;
+    S.attestScore=getAttest().reduce((n,q,i)=>n+(S.attest[i]===q.right?1:0),0);
     return render();
   }
   if(a==="attestReset"){ S.attest={}; S.attestDone=false; S.attestScore=0; return render(); }
@@ -1647,15 +1576,12 @@ document.addEventListener("click", e => {
   if(a==="grade"){ S.checked[el.dataset.w]=+el.dataset.g; return render(); }
 });
 
-document.getElementById("ageSw").addEventListener("click", e => {
-  const b = e.target.closest("[data-age]"); if(!b) return;
-  S.ageBand = b.dataset.age; render();
-});
 
 document.addEventListener("submit", e => {
   if(e.target.closest("[data-act='loginForm']")){
     e.preventDefault();
-    const b = document.querySelector("button[data-act='login']");
+    const b = document.querySelector("button[data-act='loginStaff']")
+           || document.querySelector("button[data-act='login']");
     if(b) b.click();
   }
 });
@@ -1665,34 +1591,13 @@ document.addEventListener("change", e => {
   if(sel){ S.anketa[sel.dataset.k]=sel.value; render(); }
 });
 
-document.getElementById("notesBtn").addEventListener("click", () => { S.notes=!S.notes; render(); });
-document.getElementById("resetBtn").addEventListener("click", () => {
-  S = JSON.parse(JSON.stringify(BLANK)); save(); render();
-});
 
-// Липкие отступы считаются от фактической высоты шапки: она переносится
-// по-разному на разной ширине, и захардкоженные 57/88 px разъезжались.
-(function(){
-  const bar = document.querySelector(".demobar");
-  const dis = document.querySelector(".disclaimer");
-  const sync = () => {
-    const b = Math.round(bar.getBoundingClientRect().height);
-    const d = Math.round(dis.getBoundingClientRect().height);
-    document.documentElement.style.setProperty("--barh", b + "px");
-    document.documentElement.style.setProperty("--stickh", (b + d) + "px");
-  };
-  sync();
-  if("ResizeObserver" in window){
-    const ro = new ResizeObserver(sync);
-    ro.observe(bar); ro.observe(dis);
-  }
-  addEventListener("resize", sync);
-})();
 
 document.documentElement.lang = "ru";
-document.getElementById("roles").setAttribute("role","group");
-document.getElementById("roles").setAttribute("aria-label","Роль в демонстрации");
-document.getElementById("rail").setAttribute("aria-label","Карта экранов продукта");
+document.getElementById("rail").setAttribute("aria-label","Разделы");
+document.getElementById("themeBtn").addEventListener("click", () => {
+  S.theme = S.theme === "dark" ? "light" : "dark"; render();
+});
 
 render();
 </script>
