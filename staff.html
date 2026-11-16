@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Кабинет сотрудника — Навигатор</title>
+<style>
+:root {
+  --bg: #F8FAFC;
+  --card: #FFFFFF;
+  --ink: #0F172A;
+  --ink-muted: #64748B;
+  --accent: #2563EB;
+  --accent-soft: #EFF6FF;
+  --good: #059669;
+  --good-soft: #ECFDF5;
+  --warn: #D97706;
+  --warn-soft: #FFFBEB;
+  --crit: #DC2626;
+  --crit-soft: #FEF2F2;
+  --line: #E2E8F0;
+  --radius: 12px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-size: 15px; line-height: 1.5; min-height: 100vh; display: flex; flex-direction: column;
+}
+.header {
+  background: var(--card); border-bottom: 1px solid var(--line);
+  padding: 12px 24px; display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 12px;
+}
+.brand { font-size: 18px; font-weight: 800; color: var(--ink); display: flex; align-items: center; gap: 8px; }
+.brand span { font-size: 13px; font-weight: 600; color: var(--accent); background: var(--accent-soft); padding: 2px 8px; border-radius: 6px; }
+.tabs { display: flex; gap: 6px; background: var(--bg); border: 1px solid var(--line); padding: 4px; border-radius: 10px; }
+.tab-btn {
+  background: transparent; border: 0; padding: 7px 16px; border-radius: 8px;
+  font-size: 14px; font-weight: 600; color: var(--ink-muted); cursor: pointer;
+}
+.tab-btn.active { background: var(--card); color: var(--accent); box-shadow: var(--shadow); }
+.container { width: 100%; max-width: 1080px; margin: 0 auto; padding: 24px 16px; flex: 1; }
+.card {
+  background: var(--card); border-radius: var(--radius); border: 1px solid var(--line);
+  padding: 20px; box-shadow: var(--shadow); margin-bottom: 20px;
+}
+.badge {
+  display: inline-flex; align-items: center; font-size: 12px; font-weight: 700;
+  padding: 3px 8px; border-radius: 6px;
+}
+.badge.crit { background: var(--crit-soft); color: var(--crit); }
+.badge.good { background: var(--good-soft); color: var(--good); }
+.badge.warn { background: var(--warn-soft); color: var(--warn); }
+.table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.table th { text-align: left; padding: 10px 12px; border-bottom: 2px solid var(--line); color: var(--ink-muted); font-size: 13px; }
+.table td { padding: 12px; border-bottom: 1px solid var(--line); }
+.table tr:hover td { background: var(--bg); }
+.btn {
+  background: var(--accent); color: #FFF; border: 0; border-radius: 8px;
+  padding: 8px 16px; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none;
+}
+.btn.ghost { background: var(--bg); color: var(--ink); border: 1px solid var(--line); }
+.btn.good { background: var(--good); }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="brand">
+    🏢 Навигатор <span>Кабинет сотрудника</span>
+  </div>
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="psy">🩺 Психолог</button>
+    <button class="tab-btn" data-tab="curator">📋 Куратор</button>
+    <button class="tab-btn" data-tab="teacher">📚 Преподаватель</button>
+    <button class="tab-btn" data-tab="admin">🔑 Администратор</button>
+  </div>
+  <a href="index.html" class="btn ghost" style="font-size:13px; text-decoration:none;">← В интерфейс ребёнка</a>
+</header>
+
+<main class="container" id="staffView">
+  <!-- Рендер активной вкладки -->
+</main>
+
+<script>
+let currentTab = "psy";
+let alertData = {
+  kidName: "Артём К.",
+  age: "17 лет",
+  time: "Сегодня, 11:20",
+  text: "Вчера в телеграме предложили «быстрый заработок» — сдать карту за 5 000 ₽. Сказали, ничего незаконного. Боюсь, что влипну, хочу посоветоваться.",
+  status: "new"
+};
+
+try {
+  const custom = localStorage.getItem("navigator_staff_alert");
+  if (custom) alertData = Object.assign(alertData, JSON.parse(custom));
+} catch(e) {}
+
+const KIDS = [
+  {id:"k4", name:"Артём К.", age:"17 лет", org:"Учреждение А", consent:"есть (152-ФЗ)", flag: alertData.status==="new", last:"сегодня", top:"Финансы и безопасность"},
+  {id:"k1", name:"Даниил С.", age:"15 лет", org:"Учреждение А", consent:"есть (152-ФЗ)", flag:false, last:"вчера", top:"Техника и ремонт"},
+  {id:"k2", name:"Мария В.", age:"16 лет", org:"Учреждение А", consent:"есть (152-ФЗ)", flag:false, last:"сегодня", top:"Дизайн и медиа"},
+  {id:"k3", name:"Сергей П.", age:"14 лет", org:"Учреждение Б", consent:"есть (152-ФЗ)", flag:false, last:"3 дня назад", top:"Данные и код"}
+];
+
+function render() {
+  const container = document.getElementById("staffView");
+  document.querySelectorAll(".tab-btn").forEach(b => {
+    b.classList.toggle("active", b.dataset.tab === currentTab);
+  });
+
+  if (currentTab === "psy") {
+    container.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <div>
+          <h1 style="margin:0;">Служба психологического сопровождения</h1>
+          <p style="color:var(--ink-muted); margin:4px 0 0;">Дежурный психолог: Ольга Сергеевна В. · Все обращения защищены по ст. 10 152-ФЗ</p>
+        </div>
+      </div>
+
+      ${alertData.status === 'new' ? `
+        <div class="card" style="border:2px solid var(--crit); background:var(--crit-soft);">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            <div>
+              <span class="badge crit">🚨 Срочный сигнал бедствия / Вопрос подростка</span>
+              <h2 style="color:var(--crit); margin:8px 0 4px;">Подросток запросил срочную консультацию: ${alertData.kidName} (${alertData.age})</h2>
+              <div style="font-size:13px; color:var(--ink-muted);">Время поступления: ${alertData.time}</div>
+            </div>
+          </div>
+          <div style="background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px; margin:12px 0; font-size:15px; font-weight:500;">
+            «${alertData.text}»
+          </div>
+          <div style="display:flex; gap:10px; align-items:center;">
+            <button class="btn good" id="resolveAlertBtn">✅ Зафиксировать контакт / Разъяснить риски</button>
+            <span style="font-size:13px; color:var(--ink-muted);">Разговор не записывается на сервер (требование 152-ФЗ)</span>
+          </div>
+        </div>
+      ` : `
+        <div class="card" style="border:1px solid var(--good); background:var(--good-soft); padding:14px 20px;">
+          <span style="color:var(--good); font-weight:700;">✅ Сигнал Артёма отработан:</span>
+          <span style="color:var(--ink); font-size:14px;"> Психолог связалась с подростком в учреждении, разъяснены риски ст. 159 УК РФ (дропперство). Подросток отказался от передачи карты.</span>
+        </div>
+      `}
+
+      <div class="card">
+        <h2 style="margin-bottom:14px;">Подопечные на сопровождении</h2>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Подросток</th>
+              <th>Возраст</th>
+              <th>Учреждение</th>
+              <th>Согласие</th>
+              <th>Активность</th>
+              <th>Статус</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${KIDS.map(k => `
+              <tr>
+                <td><b>${k.name}</b></td>
+                <td>${k.age}</td>
+                <td>${k.org}</td>
+                <td><span class="badge good">${k.consent}</span></td>
+                <td>${k.last}</td>
+                <td>${k.flag ? '<span class="badge crit">требует реакции</span>' : '<span class="badge good">спокойно</span>'}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+  } else if (currentTab === "curator") {
+    container.innerHTML = `
+      <div class="card">
+        <h1>Мониторинг учреждений и групп</h1>
+        <p style="color:var(--ink-muted);">Куратор фонда: Марина С. · Контроль посещаемости и вовлеченности</p>
+        <table class="table" style="margin-top:16px;">
+          <thead>
+            <tr>
+              <th>Учреждение</th>
+              <th>Всего детей</th>
+              <th>В графике</th>
+              <th>Нужна помощь</th>
+              <th>Оборудование</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><b>Детский дом №1 (Учреждение А)</b></td>
+              <td>18</td>
+              <td><span class="badge good">15 детей (83%)</span></td>
+              <td>1 ребёнок</td>
+              <td>5 ПК фонда (исправны)</td>
+            </tr>
+            <tr>
+              <td><b>Центр содействия (Учреждение Б)</b></td>
+              <td>12</td>
+              <td><span class="badge warn">8 детей (66%)</span></td>
+              <td>2 ребёнка</td>
+              <td>3 ноутбука</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    `;
+  } else if (currentTab === "teacher") {
+    container.innerHTML = `
+      <div class="card">
+        <h1>Проверка домашних заданий</h1>
+        <p style="color:var(--ink-muted);">Курс: Первые деньги и финансовая безопасность</p>
+        <table class="table" style="margin-top:16px;">
+          <thead>
+            <tr>
+              <th>Ученик</th>
+              <th>Задание</th>
+              <th>Ответ</th>
+              <th>Статус</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><b>Артём К.</b></td>
+              <td>Тренажёр: звонок от мошенников</td>
+              <td>Отказался передавать номер карты и положил трубку</td>
+              <td><span class="badge good">Сдано 3/3</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    `;
+  } else if (currentTab === "admin") {
+    container.innerHTML = `
+      <div class="card">
+        <h1>Реестр ключей доступа и согласий (152-ФЗ)</h1>
+        <p style="color:var(--ink-muted);">Привязка каждого ключа к типу законного представителя и документу-основанию</p>
+        <table class="table" style="margin-top:16px;">
+          <thead>
+            <tr>
+              <th>Ключ</th>
+              <th>Учреждение</th>
+              <th>Представитель</th>
+              <th>Документ-основание</th>
+              <th>Статус</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>ДЕМО-01-4821</code></td>
+              <td>Учреждение А</td>
+              <td>Организация-опекун</td>
+              <td>Приказ №117 от 12.08.2026</td>
+              <td><span class="badge good">активен</span></td>
+            </tr>
+            <tr>
+              <td><code>ДЕМО-01-4822</code></td>
+              <td>Учреждение А</td>
+              <td>Родитель с сохранёнными правами</td>
+              <td>Заявление №118</td>
+              <td><span class="badge good">активен</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+}
+
+document.addEventListener("click", (e) => {
+  const tab = e.target.closest("[data-tab]");
+  if (tab) {
+    currentTab = tab.dataset.tab;
+    render();
+    return;
+  }
+  if (e.target.id === "resolveAlertBtn") {
+    alertData.status = "resolved";
+    try {
+      localStorage.setItem("navigator_staff_alert", JSON.stringify(alertData));
+    } catch(err) {}
+    render();
+  }
+});
+
+render();
+</script>
+</body>
+</html>
